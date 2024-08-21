@@ -17,12 +17,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Assemble Debug
         run: ./gradlew assembleDebug
+
+      - name: pwd
+        run: pwd
         
       - name: ls
-        run: ls /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
+        run: ls /home/runner/work/traewelldroid/traewelldroid
       
       - name: ls
-        run: ls /home/runner/work/traewelldroid/traewelldroid/
+        run: ls /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
         
       - uses: vimtor/action-zip@v1
         with:
