@@ -23,6 +23,12 @@ jobs:
       
       - name: ls
         run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss
         
       - uses: vimtor/action-zip@v1
         with:
