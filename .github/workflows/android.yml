@@ -25,17 +25,17 @@ jobs:
         run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk
       
       - name: ls
-        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug/app-play-debug.apk
       
       - name: ls
-        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug
-        
-      - uses: vimtor/action-zip@v1
-        with:
-          files: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk
-          dest: assembly.zip
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
           
       - uses: actions/upload-artifact@v3
         with: 
-          name: assembly
-          path: assembly.zip
+          name: play.apk
+          path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug/app-play-debug.apk      
+          
+      - uses: actions/upload-artifact@v3
+        with: 
+          name: foss.apk
+          path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
