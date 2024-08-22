@@ -10,7 +10,7 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  assemble:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,3 +25,19 @@ jobs:
         run: ./gradlew assembleFossDebug
       - name: Assemble Google Play flavor
         run: ./gradlew assemblePlayDebug
+
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/
+        
+      - uses: vimtor/action-zip@v1
+        with:
+          files: /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
+          dest: assembly.zip
+          
+      - uses: actions/upload-artifact@v3
+        with: 
+          name: assembly
+          path: assembly.zip

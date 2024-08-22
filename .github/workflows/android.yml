@@ -16,4 +16,26 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Assemble Debug
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --info
+        
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug/app-play-debug.apk
+      
+      - name: ls
+        run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
+          
+      - uses: actions/upload-artifact@v3
+        with: 
+          name: play.apk
+          path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug/app-play-debug.apk      
+          
+      - uses: actions/upload-artifact@v3
+        with: 
+          name: foss.apk
+          path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
