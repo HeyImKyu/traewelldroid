@@ -55,6 +55,7 @@ android {
 
     buildTypes {
         release {
+            manifestPlaceholders
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             minifyEnabled false
 
@@ -68,7 +69,7 @@ android {
             buildConfigField "String", "UP_FCM_PROXY", "\"https://push.traewelldroid.de/FCM\""
             manifestPlaceholders["SENTRY_DSN"] = "https://9664595fcad94b6c90fe2021ab1ec3f0@sentry.traewelldroid.de/3"
 
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
         }
         debug {
             buildConfigField "String", "OAUTH_REDIRECT_URL", "\"https://app.traewelldroid.de/oauth2redirect\""
