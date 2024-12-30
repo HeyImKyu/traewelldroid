@@ -105,9 +105,6 @@ fun SegmentedLinearProgressIndicator(progress: Float) {
         Color(0xFF55CDFC)  // Light Blue
     )
 
-    val segmentCount = colors.size
-    val segmentWidthFraction = 1f / segmentCount
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,7 +282,7 @@ fun CheckInCard(
                     )
                 }
                 SegmentedLinearProgressIndicator(
-                    progress = if (progressAnimation.isNaN() || progressAnimation == 0f) 1f else progressAnimation
+                    progress = if (progressAnimation.isNaN()) 0f else progressAnimation
                 )
                 CheckInCardFooter(
                     modifier = Modifier.fillMaxWidth(),
