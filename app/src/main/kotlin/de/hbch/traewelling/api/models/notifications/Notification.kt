@@ -2,11 +2,13 @@ package de.hbch.traewelling.api.models.notifications
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.navigation.NavHostController
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import de.hbch.traewelling.R
+import de.hbch.traewelling.navigation.ManageFollowers
+import de.hbch.traewelling.navigation.PersonalProfile
+import de.hbch.traewelling.navigation.StatusDetails
 import de.hbch.traewelling.util.TraewelldroidUriBuilder
 
 @Suppress("unused")
@@ -51,7 +53,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("personal-profile/?username=${data.user.username}")
+                    it.navigate(ManageFollowers(true))
                 }
             }
             return onClick
@@ -62,11 +64,9 @@ enum class NotificationType {
             if (data != null) {
                 intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.Builder()
-                        .scheme("https")
-                        .authority("traewelling.de")
-                        .appendPath("settings")
-                        .appendPath("follower")
+                    TraewelldroidUriBuilder()
+                        .appendPath("manage-followers")
+                        .appendQueryParameter("followRequests", "true")
                         .build()
                 )
             }
@@ -99,7 +99,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("personal-profile/?username=${data.user.username}")
+                    it.navigate(PersonalProfile(data.user.username))
                 }
             }
             return onClick
@@ -157,7 +157,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("status-details/${data.status.id}")
+                    it.navigate(StatusDetails(data.status.id))
                 }
             }
             return onClick
@@ -200,7 +200,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("personal-profile/?username=${data.follower.username}")
+                    it.navigate(PersonalProfile(data.follower.username))
                 }
             }
             return onClick
@@ -255,7 +255,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("status-details/${data.status.id}")
+                    it.navigate(StatusDetails(data.status.id))
                 }
             }
             return onClick
@@ -302,7 +302,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("status-details/${data.status.id}")
+                    it.navigate(StatusDetails(data.status.id))
                 }
             }
             return onClick
@@ -345,7 +345,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("status-details/${data.status.id}")
+                    it.navigate(StatusDetails(data.status.id))
                 }
             }
             return onClick
@@ -415,7 +415,7 @@ enum class NotificationType {
             var onClick: (NavHostController) -> Unit = { }
             if (data != null) {
                 onClick = {
-                    it.navigate("status-details/${data.status.id}")
+                    it.navigate(StatusDetails(data.status.id))
                 }
             }
             return onClick

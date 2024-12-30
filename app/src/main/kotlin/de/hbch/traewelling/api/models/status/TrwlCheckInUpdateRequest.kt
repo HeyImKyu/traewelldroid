@@ -10,5 +10,6 @@ data class TrwlCheckInUpdateRequest(
     val destinationId: Int? = null,
     val destinationArrivalPlanned: ZonedDateTime? = null,
     val manualDeparture: ZonedDateTime? = null,
-    val manualArrival: ZonedDateTime? = null
+    val manualArrival: ZonedDateTime? = null,
+    val eventId: Int? = null
 ): CheckInUpdateRequest()

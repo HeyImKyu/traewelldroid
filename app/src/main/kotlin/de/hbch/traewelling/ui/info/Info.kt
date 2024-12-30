@@ -31,7 +31,7 @@ import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
 import de.hbch.traewelling.BuildConfig
 import de.hbch.traewelling.R
 import de.hbch.traewelling.theme.MainTheme
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.OutlinedButtonWithIconAndText
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +61,7 @@ fun InfoScreen(
             var licensesVisible by remember { mutableStateOf(false) }
 
             if (licensesVisible) {
-                Dialog(onDismissRequest = { licensesVisible = false }) {
+                ContentDialog(onDismissRequest = { licensesVisible = false }) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp)

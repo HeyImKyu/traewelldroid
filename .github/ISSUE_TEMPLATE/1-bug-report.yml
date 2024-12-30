@@ -1,0 +1,63 @@
+name: 🐛 Bug report
+description: Use this if something in the app is not working properly.
+labels: ["bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for your request?
+      description: Please use the search to see if there is an existing issue open.
+      options:
+        - label: I have searched the existing issues and did not find an open one
+          required: true
+  - type: checkboxes
+    attributes:
+      label: |
+        Is your issue regarding to timetable or routing data within any check-in displayed in
+        Träwelldroid?
+      description: |
+        We cannot change those data displayed in Träwelldroid since the app is only a client using
+        interfaces to the check-in service Träwelling. Please check the Träwelling FAQ if your
+        question is answered there.
+      options:
+        - label: I have no issue with the displayed timetable or check-in data.
+          required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug / current behaviour
+      description: |
+        A clear and detailed description of the bug and how to reproduce it. You may want to attach
+        screenshots or screen videos. Please do not publish any personal sensitive data or data of
+        third persons without their knowledge.
+      placeholder: |
+        The bug always occurs when I open ...
+        Reproduction:
+        1. Do this
+        2. Then that
+        3. See the bug
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the expected behaviour
+      description: |
+        A clear and detailed description of what you would expect when everything is working
+        normally.
+      placeholder: |
+        I would expect the app to...
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Your app version
+      description: What app version do you use?
+      placeholder: v2.17.0
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: |
+        Do you have anything else to say? You can include information about your device and Android
+        version here.
+    validations:
+      required: false

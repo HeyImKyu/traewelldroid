@@ -6,6 +6,8 @@ plugins {
     id "io.sentry.android.gradle" version "4.11.0"
     id "com.mikepenz.aboutlibraries.plugin"
     id "com.google.gms.google-services"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.0.20'
+    id "org.jetbrains.kotlin.plugin.compose" version "2.0.0"
 }
 
 sentry {
@@ -22,9 +24,16 @@ aboutLibraries {
 
 android {
     def packageName = "de.hbch.traewelling"
-    def name = "2.13.2"
-    def code = 163
+    def name = "2.17.5"
+    def code = 182
     compileSdk 35
+
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
 
     defaultConfig {
         applicationId packageName
@@ -55,7 +64,6 @@ android {
 
     buildTypes {
         release {
-            manifestPlaceholders
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             minifyEnabled false
 
@@ -70,7 +78,7 @@ android {
             manifestPlaceholders["SENTRY_DSN"] = "https://6d3e121491134a8ea8ed3f560b03b5ec@bugs.traewelldroid.de/1"
             manifestPlaceholders["SENTRY_ENV"] = "production"
 
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
         debug {
             buildConfigField "String", "OAUTH_REDIRECT_URL", "\"https://app.traewelldroid.de/oauth2redirect\""
@@ -91,15 +99,12 @@ android {
         compose = true
         buildConfig true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "21"
     }
     namespace "de.hbch.traewelling"
     flavorDimensions = [ "libs" ]
@@ -122,30 +127,29 @@ aboutLibraries {
 
 dependencies {
     // Jetpack Compose
-    def composeVersion = "1.6.8"
+    def composeVersion = '1.7.5'
     implementation "androidx.compose.runtime:runtime:$composeVersion"
     implementation "androidx.compose.ui:ui:$composeVersion"
     implementation "androidx.compose.foundation:foundation:$composeVersion"
     implementation "androidx.compose.foundation:foundation-layout:$composeVersion"
     implementation "androidx.compose.material:material:$composeVersion"
-    implementation "androidx.compose.runtime:runtime-livedata:1.6.8"
+    implementation "androidx.compose.runtime:runtime-livedata:$composeVersion"
     implementation "androidx.compose.ui:ui-tooling:$composeVersion"
-    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.34.0'
-    implementation 'com.google.accompanist:accompanist-systemuicontroller:0.34.0'
-    implementation 'com.google.accompanist:accompanist-permissions:0.34.0'
-    implementation "androidx.compose.material3:material3:1.2.1"
-    implementation "androidx.activity:activity-compose:1.9.1"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation 'com.google.accompanist:accompanist-themeadapter-material3:0.36.0'
+    implementation 'com.google.accompanist:accompanist-permissions:0.36.0'
+    implementation "androidx.compose.material3:material3:1.3.1"
+    implementation "androidx.activity:activity-compose:1.9.3"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0"
 
     implementation "androidx.compose.animation:animation:1.6.8"
     implementation "androidx.compose.ui:ui:1.6.8"
 
-    implementation "androidx.core:core-ktx:1.13.1"
+    implementation "androidx.core:core-ktx:1.15.0"
     implementation "androidx.appcompat:appcompat:1.7.0"
     implementation "com.google.android.material:material:1.12.0"
-    implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.8.4"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4"
+    implementation "androidx.constraintlayout:constraintlayout:2.2.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.8.7"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7"
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
     implementation "androidx.browser:browser:1.8.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
@@ -161,7 +165,7 @@ dependencies {
     implementation "com.github.jcloquell:android-secure-storage:0.1.3"
 
     // Navigation Component
-    implementation "androidx.navigation:navigation-compose:2.7.7"
+    implementation "androidx.navigation:navigation-compose:2.8.4"
 
     // Retrofit
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
@@ -173,7 +177,7 @@ dependencies {
     implementation 'de.c1710:filemojicompat-autoinit:3.2.7'
 
     // OSS licenses
-    implementation 'com.mikepenz:aboutlibraries-compose:11.2.2'
+    implementation 'com.mikepenz:aboutlibraries-compose:11.2.3'
 
     // Feature flags
     implementation 'io.getunleash:unleash-android-proxy-sdk:1.0.0'
@@ -193,11 +197,13 @@ dependencies {
     implementation 'com.github.doyaaaaaken:kotlin-csv-jvm:1.10.0'
 
     // Reviews
-    playImplementation 'com.google.android.play:review:2.0.1'
-    playImplementation 'com.google.android.play:review-ktx:2.0.1'
+    playImplementation 'com.google.android.play:review:2.0.2'
+    playImplementation 'com.google.android.play:review-ktx:2.0.2'
 
     // Showcase
     implementation 'com.canopas.intro-showcase-view:introshowcaseview:2.0.1'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3'
 }
 
 

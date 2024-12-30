@@ -1,0 +1,27 @@
+name: ✨ Feature request
+description: Do you have a groundbreaking feature idea? Tell us more here!
+labels: ["feature"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for your request?
+      description: Please use the search to see if there is an existing issue open.
+      options:
+        - label: I have searched the existing issues and did not find an open one
+          required: true
+  - type: textarea
+    attributes:
+      label: Describe your idea
+      description: |
+        A clear and detailed description of the feature and how you would imagine it.
+      placeholder: |
+        I always wished to use the app for...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: |
+        Do you have anything else to say?
+    validations:
+      required: false

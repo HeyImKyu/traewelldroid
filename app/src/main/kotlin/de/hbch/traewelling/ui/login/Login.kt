@@ -9,7 +9,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import de.hbch.traewelling.R
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.theme.Traewelldroid
@@ -38,13 +36,6 @@ fun LoginScreen(
     loginAction: (Boolean) -> Unit = { },
     informationAction: () -> Unit = { }
 ) {
-    val systemUiController = rememberSystemUiController()
-    DisposableEffect(systemUiController) {
-        systemUiController.setSystemBarsColor(Traewelldroid, darkIcons = false)
-        systemUiController.setNavigationBarColor(Traewelldroid, darkIcons = false)
-
-        onDispose {  }
-    }
     var notificationsEnabled by remember { mutableStateOf(false) }
     val isLoading by loadingData.observeAsState(false)
 

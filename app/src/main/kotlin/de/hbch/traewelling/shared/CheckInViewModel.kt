@@ -144,7 +144,8 @@ class CheckInViewModel : ViewModel() {
                 destinationStationId,
                 arrivalTime,
                 manualDepartureTime,
-                manualArrivalTime
+                manualArrivalTime,
+                event.value?.id
             )
         ).enqueue(object : Callback<Data<Status>> {
             override fun onResponse(call: Call<Data<Status>>, response: Response<Data<Status>>) {

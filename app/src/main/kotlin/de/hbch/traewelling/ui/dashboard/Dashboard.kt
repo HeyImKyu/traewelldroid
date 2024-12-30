@@ -21,10 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.hbch.traewelling.api.models.status.Status
+import de.hbch.traewelling.shared.FeatureFlags
 import de.hbch.traewelling.shared.LoggedInUserViewModel
-import de.hbch.traewelling.ui.composables.NotificationsAvailableHint
 import de.hbch.traewelling.ui.include.cardSearchStation.CardSearch
 import de.hbch.traewelling.ui.include.status.CheckInCardViewModel
+import de.hbch.traewelling.ui.wrapped.WrappedTeaser
 import de.hbch.traewelling.util.OnBottomReached
 import de.hbch.traewelling.util.checkInList
 import kotlinx.coroutines.launch
@@ -36,12 +37,10 @@ fun Dashboard(
     loggedInUserViewModel: LoggedInUserViewModel,
     joinConnection: (Status) -> Unit,
     searchConnectionsAction: (Int, ZonedDateTime?) -> Unit = { _, _ -> },
-    userSelectedAction: (String) -> Unit = { },
+    userSelectedAction: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     statusSelectedAction: (Int) -> Unit = { },
     statusDeletedAction: () -> Unit = { },
-    statusEditAction: (Status) -> Unit = { },
-    knowsAboutNotifications: Boolean = true,
-    notificationHintClosed: () -> Unit = { }
+    statusEditAction: (Status) -> Unit = { }
 ) {
     val dashboardViewModel: DashboardFragmentViewModel = viewModel()
     val checkInCardViewModel : CheckInCardViewModel = viewModel()
@@ -57,6 +56,9 @@ fun Dashboard(
         }
     )
     val checkInListState = rememberLazyListState()
+
+    val featureFlags = remember { FeatureFlags.getInstance() }
+    val wrappedActive by featureFlags.wrappedActive.observeAsState(false)
 
     checkInListState.OnBottomReached {
         if (dashboardViewModel.checkIns.size > 0) {
@@ -90,18 +92,19 @@ fun Dashboard(
                     homelandStationData = loggedInUserViewModel.home,
                     recentStationsData = loggedInUserViewModel.lastVisitedStations,
                     onUserSelected = {
-                        userSelectedAction(it.username)
+                        userSelectedAction(it.username, it.privateProfile, it.following)
                     }
                 )
             }
-            if (!knowsAboutNotifications) {
+
+            if (wrappedActive) {
                 item {
-                    NotificationsAvailableHint(
-                        loggedInUserViewModel = loggedInUserViewModel,
-                        onClose = notificationHintClosed
+                    WrappedTeaser(
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
+
             checkInList(
                 checkIns,
                 checkInCardViewModel,

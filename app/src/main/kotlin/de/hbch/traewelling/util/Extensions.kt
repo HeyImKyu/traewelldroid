@@ -2,6 +2,7 @@ package de.hbch.traewelling.util
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +29,12 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider.getUriForFile
 import androidx.navigation.NavHostController
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.BuildConfig
@@ -39,10 +43,11 @@ import de.hbch.traewelling.api.TraewellingApi
 import de.hbch.traewelling.api.models.lineIcons.LineIcon
 import de.hbch.traewelling.api.models.status.Status
 import de.hbch.traewelling.logging.Logger
+import de.hbch.traewelling.navigation.Destination
 import de.hbch.traewelling.shared.FeatureFlags
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.SharedValues
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.ui.include.status.CheckInCard
 import de.hbch.traewelling.ui.include.status.CheckInCardViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -62,13 +67,14 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.util.UUID
 
 fun NavHostController.popBackStackAndNavigate(
-    route: String,
+    destination: Destination,
     launchSingleTop: Boolean = true,
     popUpToInclusive: Boolean = true
 ) {
-    navigate(route) {
+    navigate(destination) {
         popUpTo(graph.id) {
             inclusive = popUpToInclusive
         }
@@ -85,7 +91,7 @@ fun LazyListScope.checkInList(
     statusSelectedAction: (Int) -> Unit = { },
     statusEditAction: (Status) -> Unit = { },
     statusDeletedAction: () -> Unit = { },
-    userSelectedAction: (String) -> Unit = { },
+    userSelectedAction: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     showDailyStatisticsLink: Boolean = false,
     dailyStatisticsSelectedAction: (LocalDate) -> Unit = { },
     showDate: Boolean = true
@@ -119,7 +125,7 @@ fun LazyListScope.checkInList(
                         .weight(1f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = AppTypography.titleLarge
+                    style = LocalFont.current.titleLarge
                 )
                 if (showDailyStatisticsLink) {
                     Icon(
@@ -175,7 +181,8 @@ fun LazyListState.OnBottomReached(
 }
 
 fun Context.shareStatus(
-    status: Status
+    status: Status,
+    imageBitmap: ImageBitmap? = null
 ) {
     var shareText =
         if (status.getStatusText().isBlank())
@@ -194,15 +201,72 @@ fun Context.shareStatus(
 
     val sendIntent: Intent = Intent().apply {
         action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, shareText)
         type = "text/plain"
     }
+
+    if (imageBitmap != null) {
+        try {
+            val imagePath = File(cacheDir, "sharePics")
+            if (!imagePath.exists())
+                imagePath.mkdirs()
+
+            val imageFile = File.createTempFile(status.id.toString(), ".png", imagePath)
+            val outputStream = imageFile.outputStream()
+            imageBitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 95, outputStream)
+            outputStream.close()
+            val contentUri = getUriForFile(this, "de.traewelldroid.fileprovider", imageFile)
+            sendIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            sendIntent.type = "image/png"
+            shareText = shareUri.toString()
+        } catch (e: Exception) {
+            Logger.captureException(e)
+        }
+    }
+
+    sendIntent.putExtra(Intent.EXTRA_TEXT, shareText)
 
     val shareIntent = Intent.createChooser(
         sendIntent,
         getString(R.string.title_share)
     )
     startActivity(shareIntent)
+}
+
+fun Context.shareImage(
+    shareText: String,
+    imageBitmap: ImageBitmap
+) {
+    try {
+        val imagePath = File(cacheDir, "sharePics")
+        if (!imagePath.exists())
+            imagePath.mkdirs()
+
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+        }
+
+        val imageFile = File.createTempFile(UUID.randomUUID().toString(), ".png", imagePath)
+        val outputStream = imageFile.outputStream()
+        imageBitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 95, outputStream)
+        outputStream.close()
+        val contentUri = getUriForFile(this, "de.traewelldroid.fileprovider", imageFile)
+        sendIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        sendIntent.type = "image/png"
+        if (shareText.isNotEmpty()) {
+            sendIntent.putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+
+        val shareIntent = Intent.createChooser(
+            sendIntent,
+            getString(R.string.title_share)
+        )
+        startActivity(shareIntent)
+    } catch (e: Exception) {
+        Logger.captureException(e)
+    }
 }
 
 suspend fun Context.readOrDownloadLineIcons(

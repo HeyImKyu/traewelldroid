@@ -18,6 +18,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.status.Status
@@ -29,6 +30,7 @@ import de.hbch.traewelling.ui.activeCheckins.EnRoute
 import de.hbch.traewelling.ui.checkIn.CheckIn
 import de.hbch.traewelling.ui.checkInResult.CheckInResultView
 import de.hbch.traewelling.ui.dashboard.Dashboard
+import de.hbch.traewelling.ui.followers.ManageFollowers
 import de.hbch.traewelling.ui.info.InfoActivity
 import de.hbch.traewelling.ui.main.MainActivity
 import de.hbch.traewelling.ui.notifications.Notifications
@@ -76,17 +78,17 @@ fun TraewelldroidNavHost(
                 DateTimeFormatter.ISO_DATE_TIME.format(date)
 
         navController.navigate(
-            "search-connection/?station=$station&date=$formattedDate"
+            SearchConnection(station, formattedDate)
         )
     }
     val navToStatusDetails: (Int) -> Unit = { statusId ->
         navController.navigate(
-            "status-details/$statusId"
+            StatusDetails(statusId)
         )
     }
-    val navToUserProfile: (String) -> Unit = { username ->
+    val navToUserProfile: (String, Boolean, Boolean) -> Unit = { username, isPrivateProfile, isFollowing ->
         navController.navigate(
-            "personal-profile/?username=$username"
+            PersonalProfile(username, isPrivateProfile, isFollowing)
         )
     }
 
@@ -107,9 +109,10 @@ fun TraewelldroidNavHost(
         checkInViewModel.tripId = it.journey.hafasTripId
         checkInViewModel.editStatusId = it.id
         checkInViewModel.category = it.journey.safeProductType
+        checkInViewModel.event.postValue(it.event)
 
         navController.navigate(
-            "check-in/?editMode=true"
+            CheckIn(true)
         )
     }
 
@@ -126,26 +129,16 @@ fun TraewelldroidNavHost(
         checkInViewModel.destination = status.journey.destination.name
 
         navController.navigate(
-            CheckIn.route
+            CheckIn()
         )
-    }
-
-    val initKnowsAboutNotifications = secureStorage.getObject(
-        SharedValues.SS_NOTIFICATIONS_ENABLED,
-        Boolean::class.java
-    ) != null
-    var knowsAboutNotifications by remember { mutableStateOf(initKnowsAboutNotifications) }
-    val closeNotificationHint: () -> Unit = {
-        secureStorage.storeObject(SharedValues.SS_NOTIFICATIONS_ENABLED, false)
-        knowsAboutNotifications = true
     }
 
     NavHost(
         navController = navController,
-        startDestination = Dashboard.route,
+        startDestination = Dashboard,
         modifier = modifier
     ) {
-        composable(Dashboard.route) {
+        composable<Dashboard> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -158,13 +151,12 @@ fun TraewelldroidNavHost(
                 statusSelectedAction = navToStatusDetails,
                 userSelectedAction = navToUserProfile,
                 statusEditAction = navToEditCheckIn,
-                knowsAboutNotifications = knowsAboutNotifications,
-                notificationHintClosed = closeNotificationHint,
                 joinConnection = navToJoinConnection
             )
             onResetFloatingActionButton()
         }
-        composable(EnRoute.route) {
+
+        composable<EnRoute> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -178,7 +170,7 @@ fun TraewelldroidNavHost(
                 joinConnection = navToJoinConnection
             )
         }
-        composable(Notifications.route) {
+        composable<Notifications> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf(
@@ -189,7 +181,7 @@ fun TraewelldroidNavHost(
                         notificationsViewModel.markAllAsRead {
                             onNotificationCountChange()
                             navController.popBackStack()
-                            navController.navigate(Notifications.route) {
+                            navController.navigate(Notifications) {
                                 navController.graph.startDestinationRoute?.let { screenRoute ->
                                     popUpTo(screenRoute) {
                                         inclusive = true
@@ -203,15 +195,12 @@ fun TraewelldroidNavHost(
                 initialized = true
             }
             Notifications(
-                loggedInUserViewModel = loggedInUserViewModel,
                 notificationsViewModel = notificationsViewModel,
                 navHostController = navController,
-                unreadNotificationsChanged = onNotificationCountChange,
-                knowsAboutNotifications = knowsAboutNotifications,
-                notificationHintClosed = closeNotificationHint
+                unreadNotificationsChanged = onNotificationCountChange
             )
         }
-        composable(Statistics.route) {
+        composable<Statistics> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -222,15 +211,14 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(
-            PersonalProfile.route,
-            deepLinks = PersonalProfile.deepLinks
+        composable<PersonalProfile>(
+            deepLinks = PersonalProfile.deepLinks.toNavDeepLinks()
         ) {
-            val username = it.arguments?.getString("username")
+            val profile: PersonalProfile = it.toRoute()
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 val menuItems = mutableListOf<ComposeMenuItem>()
-                if (username == null) {
+                if (profile.username == null) {
                     menuItems.addAll(
                         listOf(
                             ComposeMenuItem(
@@ -243,7 +231,7 @@ fun TraewelldroidNavHost(
                                 R.string.settings,
                                 R.drawable.ic_settings
                             ) {
-                                navController.navigate(Settings.route) {
+                                navController.navigate(Settings) {
                                     launchSingleTop = true
                                 }
                             }
@@ -255,19 +243,26 @@ fun TraewelldroidNavHost(
             }
 
             Profile(
-                username = username,
+                username = profile.username,
+                isPrivateProfile = profile.isPrivateProfile,
+                isFollowing = profile.isFollowing,
                 loggedInUserViewModel = loggedInUserViewModel,
                 stationSelectedAction = navToSearchConnections,
                 statusSelectedAction = navToStatusDetails,
                 statusEditAction = navToEditCheckIn,
                 dailyStatisticsSelectedAction = { date ->
                     val formatted = DateTimeFormatter.ISO_DATE.format(date)
-                    navController.navigate("daily-statistics/$formatted")
+                    navController.navigate(DailyStatistics(formatted))
                 },
                 userSelectedAction = navToUserProfile,
                 joinConnection = navToJoinConnection,
                 editProfile = {
-                    navController.navigate(ProfileEdit.route) {
+                    navController.navigate(ProfileEdit) {
+                        launchSingleTop = true
+                    }
+                },
+                manageFollowerAction = {
+                    navController.navigate(ManageFollowers()) {
                         launchSingleTop = true
                     }
                 }
@@ -275,31 +270,38 @@ fun TraewelldroidNavHost(
 
             onResetFloatingActionButton()
         }
-        composable(ProfileEdit.route) {
+        composable<ProfileEdit> {
             EditProfile(
                 snackbarHostState = snackbarHostState,
                 manageTrustedUsers = {
-                    navController.navigate(TrustedUsers.route) {
+                    navController.navigate(TrustedUsers) {
                         launchSingleTop = true
                     }
                 }
             )
         }
-        composable(TrustedUsers.route) {
+        composable<ManageFollowers>(deepLinks = ManageFollowers.deepLinks.toNavDeepLinks()) {
+            val data: ManageFollowers = it.toRoute()
+            ManageFollowers(
+                snackbarHostState = snackbarHostState,
+                showFollowRequests = data.followRequests
+            )
+        }
+        composable<TrustedUsers> {
             TrustedUsers()
         }
-        composable(
-            DailyStatistics.route,
-            deepLinks = DailyStatistics.deepLinks
+        composable<DailyStatistics>(
+            deepLinks = DailyStatistics.deepLinks.toNavDeepLinks()
         ) {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
                 initialized = true
             }
-            val date = it.arguments?.getString("date")
+            val data: DailyStatistics = it.toRoute()
+            val date = data.date
             var localDate = LocalDate.now()
-            if (date != null) {
+            if (date.isNotEmpty()) {
                 localDate = LocalDate.from(DateTimeFormatter.ISO_DATE.parse(date))
             }
             DailyStatistics(
@@ -310,7 +312,7 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(Settings.route) {
+        composable<Settings> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -323,12 +325,12 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(
-            StatusDetails.route,
-            deepLinks = StatusDetails.deepLinks
+        composable<StatusDetails>(
+            deepLinks = StatusDetails.deepLinks.toNavDeepLinks()
         ) {
-            val statusId = it.arguments?.getString("statusId")?.toInt()
-            if (statusId == null || statusId == 0) {
+            val statusDetails: StatusDetails = it.toRoute()
+            val statusId = statusDetails.statusId
+            if (statusId == 0) {
                 navController.popBackStack()
                 return@composable
             }
@@ -375,14 +377,14 @@ fun TraewelldroidNavHost(
                 userSelected = navToUserProfile
             )
         }
-        composable(
-            SearchConnection.route,
-            deepLinks = SearchConnection.deepLinks
+        composable<SearchConnection>(
+            deepLinks = SearchConnection.deepLinks.toNavDeepLinks()
         ) {
+            val data: SearchConnection = it.toRoute()
             // if specific date is passed, take it. if not, search from now -5min
             var zonedDateTime = ZonedDateTime.now().minusMinutes(5)
-            val searchDate = it.arguments?.getString("date")
-            if (!searchDate.isNullOrBlank()) {
+            val searchDate = data.date
+            if (!searchDate.isNullOrEmpty()) {
                 zonedDateTime = ZonedDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(searchDate))
             }
 
@@ -394,12 +396,12 @@ fun TraewelldroidNavHost(
 
             SearchConnection(
                 loggedInUserViewModel = loggedInUserViewModel,
-                station = it.arguments?.getString("station")?.toIntOrNull() ?: 5167,
+                station = data.station,
                 currentSearchDate = zonedDateTime,
                 checkInViewModel = checkInViewModel,
                 onTripSelected = {
                     navController.navigate(
-                        "select-destination/?editMode=false"
+                        SelectDestination(false)
                     )
                 },
                 onHomelandSelected = { station ->
@@ -420,8 +422,9 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(SelectDestination.route) {
-            val editMode = it.arguments?.getString("editMode")?.toBooleanStrictOrNull() ?: false
+        composable<SelectDestination> {
+            val data: SelectDestination = it.toRoute()
+            val editMode = data.editMode
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -431,7 +434,7 @@ fun TraewelldroidNavHost(
                 checkInViewModel = checkInViewModel,
                 onStationSelected = {
                     navController.navigate(
-                        "check-in/?editMode=$editMode"
+                        CheckIn(editMode)
                     ) {
                         launchSingleTop = true
                     }
@@ -439,8 +442,9 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(CheckIn.route) {
-            val editMode = it.arguments?.getString("editMode")?.toBooleanStrictOrNull() ?: false
+        composable<CheckIn> {
+            val data: CheckIn = it.toRoute()
+            val editMode = data.editMode
             val initText =
                 if (editMode) {
                     checkInViewModel.message.value ?: ""
@@ -473,7 +477,7 @@ fun TraewelldroidNavHost(
                     if (editMode) {
                         checkInViewModel.updateCheckIn { status ->
                             navController.navigate(
-                                "status-details/${status.id}"
+                                StatusDetails(status.id)
                             ) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     inclusive = false
@@ -487,7 +491,7 @@ fun TraewelldroidNavHost(
                         coroutineScope.launch {
                             checkInViewModel.checkIn(trwl, travelynx) { succeeded ->
                                 navController.navigate(
-                                    CheckInResult.route
+                                    CheckInResult
                                 ) {
                                     if (succeeded) {
                                         secureStorage.storeObject(
@@ -508,7 +512,7 @@ fun TraewelldroidNavHost(
                 isEditMode = editMode,
                 changeDestinationAction = {
                     navController.navigate(
-                        "select-destination/?editMode=true"
+                        SelectDestination(true)
                     ) {
                         launchSingleTop = true
                     }
@@ -516,7 +520,7 @@ fun TraewelldroidNavHost(
             )
             onResetFloatingActionButton()
         }
-        composable(CheckInResult.route) {
+        composable<CheckInResult> {
             var initialized by remember { mutableStateOf(false) }
             if (!initialized) {
                 onMenuChange(listOf())
@@ -531,14 +535,14 @@ fun TraewelldroidNavHost(
                 onFloatingActionButtonChange = { icon, label ->
                     onFloatingActionButtonChange(icon, label) {
                         checkInViewModel.reset()
-                        navController.popBackStackAndNavigate(Dashboard.route)
+                        navController.popBackStackAndNavigate(Dashboard)
                     }
                 },
                 onCheckInForced = {
                     coroutineScope.launch {
                         checkInViewModel.forceCheckIn {
                             navController.navigate(
-                                CheckInResult.route
+                                CheckInResult
                             ) {
                                 launchSingleTop = true
                             }

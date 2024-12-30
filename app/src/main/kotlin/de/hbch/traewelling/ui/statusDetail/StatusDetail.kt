@@ -50,7 +50,7 @@ import de.hbch.traewelling.api.models.status.StatusVisibility
 import de.hbch.traewelling.api.models.user.User
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.SettingsViewModel
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.theme.PolylineColor
 import de.hbch.traewelling.ui.composables.ButtonWithIconAndText
@@ -75,7 +75,7 @@ fun StatusDetail(
     statusDeleted: (Status) -> Unit = { },
     statusEdit: (Status) -> Unit = { },
     loggedInUserViewModel: LoggedInUserViewModel? = null,
-    userSelected: (String) -> Unit = { }
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> }
 ) {
     val statusDetailViewModel: StatusDetailViewModel = viewModel()
     val checkInCardViewModel: CheckInCardViewModel = viewModel()
@@ -206,7 +206,7 @@ fun StatusDetail(
                         text = operator ?: "",
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.End,
-                        style = AppTypography.labelMedium
+                        style = LocalFont.current.labelMedium
                     )
                 }
                 Row(
@@ -226,7 +226,7 @@ fun StatusDetail(
                             id = R.string.checked_in_with,
                             status?.client?.name ?: "Träwelling"
                         ),
-                        style = AppTypography.labelMedium,
+                        style = LocalFont.current.labelMedium,
                         maxLines = 2
                     )
                 }
@@ -296,7 +296,7 @@ private fun StatusLikes(
     likes: Int,
     statusDetailViewModel: StatusDetailViewModel,
     modifier: Modifier = Modifier,
-    userSelected: (String) -> Unit = { }
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> }
 ) {
     var cardExpanded by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -338,7 +338,7 @@ private fun StatusLikes(
             ) {
                 Text(
                     text = stringResource(id = R.string.likes, likes),
-                    style = AppTypography.bodyLarge
+                    style = LocalFont.current.bodyLarge
                 )
                 IconButton(onClick = expandAction) {
                     AnimatedContent(cardExpanded, label = "CardExpansionIcon") {
@@ -381,13 +381,13 @@ private fun StatusLikes(
 private fun Liker(
     user: User,
     modifier: Modifier = Modifier,
-    userSelected: (String) -> Unit = { }
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> }
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .clickable { userSelected(user.username) }
+            .clickable { userSelected(user.username, user.privateProfile, user.following) }
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Row(

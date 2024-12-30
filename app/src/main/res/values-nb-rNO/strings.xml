@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="ok">Ok</string>
     <string name="abort">Avbryt</string>
     <string name="input_username">Brukernavn</string>
@@ -25,7 +25,7 @@
     <string name="edit_status">Rediger status</string>
     <string name="change_destination">Rediger destinasjonen</string>
     <string name="status_message">Status melding</string>
-    <string name="departures_at">Avgang kl %1$s</string>
+    <string name="departures_at">Avganger på %1$s</string>
     <string name="title_select_date">Velg avgangsdato</string>
     <string name="title_select_time">Velg avgangstid</string>
     <string name="title_search_connection">Søk reise</string>
@@ -51,8 +51,8 @@
     <string name="product_type_subway">T-bane</string>
     <string name="product_type_tram">Trikk</string>
     <string name="product_type_ferry">Ferje</string>
-    <string name="product_type_national_express">Fjerntog</string>
-    <string name="product_type_national">Regiontog</string>
+    <string name="product_type_national_express">Ekspresstog</string>
+    <string name="product_type_national">Fjerntog</string>
     <string name="product_type_taxi">Taxi</string>
     <string name="product_type_regional_express">Regional Ekspresstog</string>
     <string name="check_in_successful">Du er sjekket inn!</string>
@@ -102,7 +102,7 @@
     <string name="tag_staff_role_title">Rolle på jobben</string>
     <string name="tag_staff_role_example">Lokfører, konduktør, …</string>
     <string name="greeting_morning">God morgen zZz</string>
-    <string name="greeting_day">Ha en bra dag</string>
+    <string name="greeting_day">Ha en bra dag!</string>
     <string name="greeting_night">Du er veldig lenge våken :O</string>
     <string name="stops">Stoppesteder</string>
     <string name="users">Brukere</string>
@@ -225,4 +225,49 @@
     <string name="only_check_in_persons">Vennligst sjekk inn bare medreisende som reiser faktisk sammen med deg.</string>
     <string name="no_person_allowed_check_in">Ingen har tillatt deg å sjekke dem inn.</string>
     <string name="checked_in_by">Du har blit sjekket inn av %1$s</string>
+    <plurals name="days">
+        <item quantity="one">dag</item>
+        <item quantity="other">dager</item>
+    </plurals>
+    <string name="planned">Planlagt: %1$s</string>
+    <string name="take_me_back">Ta meg tilbake!</string>
+    <string name="wrapped_is_being_prepared">Ditt tilbakeblikk på året blir forberedt. Det kan ta noen sekunder – vennligst vær talmodig. 😊</string>
+    <string name="wrapped_hey">Hei %1$s! 👋🏼</string>
+    <string name="wrapped_title">Tilbakeblikk på året</string>
+    <string name="wrapped_times">ganger …</string>
+    <string name="wrapped_times_checked_in">… du har sjekket inn! Til sammen ble det …</string>
+    <string name="of_travel">reise!</string>
+    <string name="wrapped_farest_travels">Du har reist den lengste distansen med</string>
+    <string name="wrapped_in_a_total">på til sammen</string>
+    <string name="wrapped_times_travels">Tiden går så fort! ⏰</string>
+    <string name="wrapped_longest_travels">Du har tilbrakt lengst tid på reise med</string>
+    <string name="wrapped_like_trains">Du liker togene deres, ikke sant?</string>
+    <string name="operated_by">som ble kjørt av</string>
+    <string name="wrapped_line_duration">Den linjen du tilbrakte lengst tid på var</string>
+    <string name="wrapped_longest_distance_trip">En halv verdensomseiling! 🌍</string>
+    <string name="wrapped_your_furthest_trip">Din lengste reise var den %1$s</string>
+    <string name="wrapped_longest_duration_trip">Wow, så lenge! 🕰️</string>
+    <string name="wrapped_fastest_trip">Rask som vinden! 🌬️</string>
+    <string name="wrapped_your_fastest_trip">Du kjørte over hele landet den %1$s</string>
+    <string name="wrapped_slowest_trip">Langsom som en snegl… 🐌</string>
+    <string name="wrapped_your_slowest_trip">Du slappet av den %1$s</string>
+    <string name="wrapped_unpunctual_trip">Forsinket som Bundesbahn! 😴</string>
+    <string name="wrapped_your_unpunctual_trip">Din mest forsinkede reise ved ankomst var den %1$s</string>
+    <string name="wrapped_most_liked">Hjerteknuser! 💘</string>
+    <string name="wrapped_lonely_destinations">Oppdager! 🧑🏼‍🔬</string>
+    <string name="wrapped_your_lonely_destinations">Bare du har besøkt disse stedene!</string>
+    <string name="wrapped_thank_you">Takk 💙</string>
+    <string name="discover_recap">Oppdag ditt sist år %1$d med ditt personligt tilbakeblikk på året! 🚂</string>
+    <string name="wrapped_your_longest_trip">Din mest tidkrevende reise var den %1$s</string>
+    <string name="year_is_over">%1$d er over</string>
+    <string name="wrapped_favorite_operator">Alle har sin favoritt! ♥️</string>
+    <string name="wrapped_intro">Vi har opplevet mye sammen. La oss se tilbake på reiseåret %1$d ditt og oppdage ditt tilbakeblikk! ⏳</string>
+    <string name="and">og</string>
+    <string name="wrapped_line_distance">Den linjen du reiste lengst med var</string>
+    <string name="wrapped_your_most_liked_trip">Du fikk flest \"Liker det\"-meldinger (%1$d) den %2$s</string>
+    <string name="wrapped_no_likes">Du fikk ingen \"Liker det\"-meldinger i året.</string>
+    <string name="wrapped_top_destinations">Vanemenneske 🦥</string>
+    <string name="wrapped_your_top_destinations">Disse stedene har du besøkt oftest…</string>
+    <string name="wrapped_favorite_lines">Dine favorittlinjer! 🤗</string>
+    <string name="wrapped_thank_you_description">… for å bruke Träwelldroid! God fornøyelse på dine fremtidige reiser og la oss starte et flott år %1$d sammen! 🚀</string>
 </resources>

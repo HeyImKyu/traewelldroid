@@ -1,8 +1,10 @@
 package de.hbch.traewelling.ui.main
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -74,6 +76,7 @@ import de.hbch.traewelling.navigation.Dashboard
 import de.hbch.traewelling.navigation.Notifications
 import de.hbch.traewelling.navigation.PersonalProfile
 import de.hbch.traewelling.navigation.SCREENS
+import de.hbch.traewelling.navigation.StatusDetails
 import de.hbch.traewelling.navigation.TraewelldroidNavHost
 import de.hbch.traewelling.shared.CheckInViewModel
 import de.hbch.traewelling.shared.EventViewModel
@@ -91,9 +94,6 @@ import de.hbch.traewelling.util.publishStationShortcuts
 import io.getunleash.UnleashClient
 import io.getunleash.UnleashConfig
 import io.getunleash.polling.PollingModes
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -136,14 +136,11 @@ class MainActivity : ComponentActivity()
         TraewellingApi.jwt = secureStorage.getObject(SharedValues.SS_JWT, String::class.java)!!
         SharedValues.TRAVELYNX_TOKEN = secureStorage.getObject(SharedValues.SS_TRAVELYNX_TOKEN, String::class.java) ?: ""
 
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        coroutineScope.launch {
-            eventViewModel.activeEvents()
-        }
-
         settingsViewModel.loadSettings(this)
 
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+        )
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
@@ -187,6 +184,7 @@ class MainActivity : ComponentActivity()
     }
 }
 
+@SuppressLint("RestrictedApi")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TraewelldroidApp(
@@ -199,7 +197,7 @@ fun TraewelldroidApp(
         val context = LocalContext.current
         val currentBackStack by navController.currentBackStackEntryAsState()
         val currentDestination = currentBackStack?.destination
-        val currentScreen = SCREENS.find { it.route == currentDestination?.route } ?: Dashboard
+        val currentScreen = SCREENS.find { currentDestination?.route?.contains(it::class.qualifiedName ?: "unknown") == true } ?: Dashboard
         val loggedInUser by loggedInUserViewModel.loggedInUser.observeAsState()
         val lastVisitedStations by loggedInUserViewModel.lastVisitedStations.observeAsState()
         val homelandStation by loggedInUserViewModel.home.observeAsState()
@@ -255,7 +253,7 @@ fun TraewelldroidApp(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
-                        if (currentScreen == Dashboard) {
+                        if (currentDestination?.route == Dashboard::class.qualifiedName) {
                             Icon(
                                 modifier = Modifier.size(64.dp),
                                 painter = painterResource(id = R.drawable.ic_logo),
@@ -348,7 +346,7 @@ fun TraewelldroidApp(
                                         .align(Alignment.CenterVertically)
                                         .clickable {
                                             navController.navigate(
-                                                "status-details/${currentStatus?.id}"
+                                                StatusDetails(currentStatus!!.id)
                                             )
                                         }
                                 )
@@ -371,7 +369,7 @@ fun TraewelldroidApp(
                                         ) {
                                             val user = loggedInUser
                                             if (
-                                                destination == PersonalProfile &&
+                                                destination is PersonalProfile &&
                                                 user != null
                                             ) {
                                                 AsyncImage(
@@ -397,9 +395,9 @@ fun TraewelldroidApp(
                                             overflow = TextOverflow.Ellipsis
                                         )
                                     },
-                                    selected = currentScreen == destination,
+                                    selected = currentDestination?.route?.contains(destination::class.qualifiedName ?: "unknown") == true,
                                     onClick = {
-                                        navController.popBackStackAndNavigate(destination.route)
+                                        navController.popBackStackAndNavigate(destination)
                                         appBarState.contentOffset = 0f
                                     }
                                 )

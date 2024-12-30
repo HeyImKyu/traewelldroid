@@ -14,12 +14,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -56,11 +58,10 @@ import de.hbch.traewelling.api.models.trip.ProductType
 import de.hbch.traewelling.shared.CheckInViewModel
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.SettingsViewModel
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.ui.composables.ButtonWithIconAndText
 import de.hbch.traewelling.ui.composables.DataLoading
-import de.hbch.traewelling.ui.composables.Dialog
 import de.hbch.traewelling.ui.composables.FilterChipGroup
 import de.hbch.traewelling.ui.composables.LineIcon
 import de.hbch.traewelling.ui.composables.OutlinedButtonWithIconAndText
@@ -85,6 +86,7 @@ fun SearchConnection(
     val viewModel: SearchConnectionViewModel = viewModel()
     val coroutineScope = rememberCoroutineScope()
 
+    var timeTableError by remember { mutableStateOf(false) }
     var hafasTripPage by remember { mutableStateOf<HafasTripPage?>(null) }
     var stationId by rememberSaveable { mutableIntStateOf(station) }
     val stationName by remember { derivedStateOf { hafasTripPage?.meta?.station?.name ?: "" } }
@@ -98,11 +100,13 @@ fun SearchConnection(
 
     LaunchedEffect(stationId, searchDate, selectedFilter) {
         loading = true
+        timeTableError = false
 
         coroutineScope.launch {
             val tripPage = viewModel.searchConnections(stationId, searchDate, selectedFilter)
             loading = false
-            hafasTripPage = tripPage
+            hafasTripPage = tripPage.second
+            timeTableError = tripPage.first == 502
         }
     }
 
@@ -110,7 +114,8 @@ fun SearchConnection(
         modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CardSearch(
             onStationSelected = { station ->
@@ -120,67 +125,83 @@ fun SearchConnection(
             recentStationsData = loggedInUserViewModel.lastVisitedStations,
             queryUsers = false
         )
-        ElevatedCard {
-            Column {
-                Text(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.departures_at, stationName),
-                    style = AppTypography.headlineSmall
-                )
-                HorizontalDivider(
-                    modifier = Modifier.fillMaxWidth()
-                )
-                if (loading) {
-                    DataLoading()
-                } else {
-                    SearchConnection(
-                        stationId = stationId,
-                        searchTime = searchDate,
-                        trips = trips,
-                        onPreviousTime = {
-                            val time = times?.previous
-                            time?.let {
-                                searchDate = it
-                            }
-                        },
-                        onNextTime = {
-                            val time = times?.next
-                            time?.let {
-                                searchDate = it
-                            }
-                        },
-                        onTripSelection = { trip ->
-                            checkInViewModel.reset()
-                            checkInViewModel.lineName = trip.line?.name ?: trip.line?.journeyNumber?.toString() ?: ""
-                            checkInViewModel.lineId = trip.line?.id
-                            checkInViewModel.operatorCode = trip.line?.operator?.id
-                            checkInViewModel.tripId = trip.tripId
-                            checkInViewModel.startStationId = trip.station?.id ?: -1
-                            checkInViewModel.departureTime = trip.plannedDeparture
-                            checkInViewModel.category = trip.line?.safeProductType ?: ProductType.UNKNOWN
-                            checkInViewModel.origin = trip.station?.name ?: ""
-
-                            onTripSelected()
-                        },
-                        onTimeSelection = {
-                            searchDate = it
-                        },
-                        onHomelandStationSelection = {
-                            coroutineScope.launch {
-                                val s = viewModel.setUserHomelandStation(stationId)
-                                if (s != null) {
-                                    loggedInUserViewModel.setHomelandStation(s)
-                                    onHomelandSelected(s)
-                                }
-                            }
-                        },
-                        appliedFilter = selectedFilter,
-                        onFilter = {
-                            selectedFilter = it
-                        }
+        if (timeTableError) {
+            Icon(
+                painter = painterResource(R.drawable.ic_error),
+                contentDescription = null,
+                tint = Color.Red,
+                modifier = Modifier.size(48.dp)
+            )
+            Text(
+                text = stringResource(R.string.timetable_api_error),
+                textAlign = TextAlign.Center,
+                style = LocalFont.current.bodyLarge
+            )
+        } else {
+            ElevatedCard {
+                Column {
+                    Text(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.departures_at, stationName),
+                        style = LocalFont.current.headlineSmall
                     )
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (loading) {
+                        DataLoading()
+                    } else {
+                        SearchConnection(
+                            stationId = stationId,
+                            searchTime = searchDate,
+                            trips = trips,
+                            onPreviousTime = {
+                                val time = times?.previous
+                                time?.let {
+                                    searchDate = it
+                                }
+                            },
+                            onNextTime = {
+                                val time = times?.next
+                                time?.let {
+                                    searchDate = it
+                                }
+                            },
+                            onTripSelection = { trip ->
+                                checkInViewModel.reset()
+                                checkInViewModel.lineName =
+                                    trip.line?.name ?: trip.line?.journeyNumber?.toString() ?: ""
+                                checkInViewModel.lineId = trip.line?.id
+                                checkInViewModel.operatorCode = trip.line?.operator?.id
+                                checkInViewModel.tripId = trip.tripId
+                                checkInViewModel.startStationId = trip.station?.id ?: -1
+                                checkInViewModel.departureTime = trip.plannedDeparture
+                                checkInViewModel.category =
+                                    trip.line?.safeProductType ?: ProductType.UNKNOWN
+                                checkInViewModel.origin = trip.station?.name ?: ""
+
+                                onTripSelected()
+                            },
+                            onTimeSelection = {
+                                searchDate = it
+                            },
+                            onHomelandStationSelection = {
+                                coroutineScope.launch {
+                                    val s = viewModel.setUserHomelandStation(stationId)
+                                    if (s != null) {
+                                        loggedInUserViewModel.setHomelandStation(s)
+                                        onHomelandSelected(s)
+                                    }
+                                }
+                            },
+                            appliedFilter = selectedFilter,
+                            onFilter = {
+                                selectedFilter = it
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -220,69 +241,57 @@ fun SearchConnection(
     )
 
     if (datePickerVisible) {
-        Dialog(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            onDismissRequest = { datePickerVisible = false }
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                DatePicker(state = datePickerState)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.End
+        DatePickerDialog(
+            onDismissRequest = { datePickerVisible = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerVisible = false
+                        timePickerVisible = true
+                    },
+                    enabled = datePickerState.selectedDateMillis != null
                 ) {
-                    OutlinedButtonWithIconAndText(
-                        text = stringResource(id = R.string.ok),
-                        onClick = {
-                            datePickerVisible = false
-                            timePickerVisible = true
-                        }
+                    Text(
+                        text = stringResource(id = R.string.ok)
                     )
                 }
             }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 
     if (timePickerVisible) {
-        Dialog(
-            modifier = Modifier.fillMaxWidth(0.85f),
-            onDismissRequest = { timePickerVisible = false }
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TimePicker(state = timePickerState)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    OutlinedButtonWithIconAndText(
-                        text = stringResource(id = R.string.ok),
-                        onClick = {
-                            timePickerVisible = false
+        DatePickerDialog(
+            onDismissRequest = { timePickerVisible = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        timePickerVisible = false
 
-                            val selectedDate = datePickerState.selectedDateMillis
-                            if (selectedDate != null) {
-                                var dateTime = Instant
-                                    .ofEpochMilli(selectedDate)
-                                    .atZone(ZoneId.systemDefault())
+                        val selectedDate = datePickerState.selectedDateMillis
+                        if (selectedDate != null) {
+                            var dateTime = Instant
+                                .ofEpochMilli(selectedDate)
+                                .atZone(ZoneId.systemDefault())
 
-                                dateTime = dateTime.withHour(timePickerState.hour)
-                                dateTime = dateTime.withMinute(timePickerState.minute)
+                            dateTime = dateTime.withHour(timePickerState.hour)
+                            dateTime = dateTime.withMinute(timePickerState.minute)
 
-                                onTimeSelection(dateTime)
-                            }
+                            onTimeSelection(dateTime)
                         }
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.ok)
                     )
                 }
             }
+        ) {
+            TimePicker(
+                state = timePickerState,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 
@@ -451,7 +460,7 @@ fun ConnectionListItem(
                             date = departurePlanned
                         ),
                         textDecoration = TextDecoration.LineThrough,
-                        style = AppTypography.labelMedium
+                        style = LocalFont.current.labelMedium
                     )
                 }
             }
@@ -483,7 +492,7 @@ fun ConnectionListItem(
                     if (departureStation != null) {
                         Text(
                             text = stringResource(id = R.string.from_station, departureStation),
-                            style = AppTypography.labelSmall,
+                            style = LocalFont.current.labelSmall,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -520,7 +529,7 @@ fun Platform(
                     real ?: planned ?: ""
                 ),
                 color = Color.White,
-                style = AppTypography.labelSmall
+                style = LocalFont.current.labelSmall
             )
         }
     }

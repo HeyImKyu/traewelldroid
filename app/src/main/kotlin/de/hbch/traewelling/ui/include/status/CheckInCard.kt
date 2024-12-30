@@ -76,20 +76,20 @@ import de.hbch.traewelling.api.models.trip.HafasTrainTripStation
 import de.hbch.traewelling.api.models.trip.ProductType
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.SettingsViewModel
-import de.hbch.traewelling.theme.AppTypography
 import de.hbch.traewelling.theme.HeartRed
 import de.hbch.traewelling.theme.LocalColorScheme
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.StarYellow
 import de.hbch.traewelling.ui.composables.CustomClickableText
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.LineIcon
 import de.hbch.traewelling.ui.composables.ProfilePicture
+import de.hbch.traewelling.ui.composables.SharePicDialog
 import de.hbch.traewelling.ui.report.Report
 import de.hbch.traewelling.ui.tag.StatusTags
 import de.hbch.traewelling.ui.user.getDurationString
 import de.hbch.traewelling.util.getLocalDateTimeString
 import de.hbch.traewelling.util.getLocalTimeString
-import de.hbch.traewelling.util.shareStatus
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -142,7 +142,7 @@ fun CheckInCard(
     loggedInUserViewModel: LoggedInUserViewModel? = null,
     displayLongDate: Boolean = false,
     stationSelected: (Int, ZonedDateTime?) -> Unit = { _, _ -> },
-    userSelected: (String) -> Unit = { },
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     statusSelected: (Int) -> Unit = { },
     handleEditClicked: (Status) -> Unit = { },
     onDeleted: (Status) -> Unit = { }
@@ -334,7 +334,7 @@ fun calculateProgress(
 }
 
 @Composable
-private fun StationRow(
+fun StationRow(
     modifier: Modifier = Modifier,
     station: HafasTrainTripStation,
     timePlanned: ZonedDateTime,
@@ -356,7 +356,7 @@ private fun StationRow(
                 modifier = Modifier
                     .clickable { stationSelected(station.id, null) },
                 text = station.name,
-                style = AppTypography.titleLarge,
+                style = LocalFont.current.titleLarge,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 color = primaryColor
@@ -377,7 +377,7 @@ private fun StationRow(
                     date = displayedDate
                 ),
                 color = primaryColor,
-                style = AppTypography.titleLarge
+                style = LocalFont.current.titleLarge
             )
             if (hasDelay) {
                 Text(
@@ -385,7 +385,7 @@ private fun StationRow(
                         date = timePlanned
                     ),
                     textDecoration = TextDecoration.LineThrough,
-                    style = AppTypography.labelLarge
+                    style = LocalFont.current.labelLarge
                 )
             }
         }
@@ -393,7 +393,7 @@ private fun StationRow(
 }
 
 @Composable
-private fun CheckInCardContent(
+fun CheckInCardContent(
     modifier: Modifier = Modifier,
     productType: ProductType,
     line: String,
@@ -404,7 +404,7 @@ private fun CheckInCardContent(
     message: Pair<AnnotatedString?, Map<String, InlineTextContent>>,
     operatorCode: String? = null,
     lineId: String? = null,
-    userSelected: (String) -> Unit = { },
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     textClicked: () -> Unit = { }
 ) {
     Column(
@@ -434,8 +434,8 @@ private fun CheckInCardContent(
                     text = message.first!!,
                     onClick = {
                         val annotations = message.first!!.getStringAnnotations(it - 1, it + 1)
-                        if (annotations.isNotEmpty()) {
-                            userSelected(annotations.first().item)
+                        if (annotations.isNotEmpty() && annotations.any { annotation -> annotation.tag == "userMention" }) {
+                            userSelected(annotations.first().item, false, false)
                         } else {
                             textClicked()
                         }
@@ -480,12 +480,12 @@ fun StatusDetailsRow(
         Text(
             modifier = alignmentModifier.padding(start = 12.dp),
             text = getFormattedDistance(kilometers),
-            style = AppTypography.bodySmall
+            style = LocalFont.current.bodySmall
         )
         Text(
             modifier = alignmentModifier.padding(start = 8.dp),
             text = getDurationString(duration = duration),
-            style = AppTypography.bodySmall
+            style = LocalFont.current.bodySmall
         )
         Icon(
             modifier = alignmentModifier.padding(start = 8.dp),
@@ -505,16 +505,17 @@ private fun CheckInCardFooter(
     isOwnStatus: Boolean = false,
     displayLongDate: Boolean = false,
     defaultVisibility: StatusVisibility = StatusVisibility.PUBLIC,
-    userSelected: (String) -> Unit = { },
+    userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     handleEditClicked: () -> Unit = { },
     handleDeleteClicked: () -> Unit = { }
 ) {
     var likedState by remember { mutableStateOf(status.liked ?: false) }
     var likeCountState by remember { mutableIntStateOf(status.likes ?: 0) }
     var reportFormVisible by remember { mutableStateOf(false) }
+    var shareVisible by remember { mutableStateOf(false) }
 
     if (reportFormVisible) {
-        Dialog(
+        ContentDialog(
             onDismissRequest = {
                 reportFormVisible = false
             }
@@ -523,6 +524,16 @@ private fun CheckInCardFooter(
                 statusId = status.id,
                 modifier = Modifier.padding(16.dp)
             )
+        }
+    }
+
+    if (shareVisible) {
+        ContentDialog(
+            onDismissRequest = {
+                shareVisible = false
+            }
+        ) {
+            SharePicDialog(status = status)
         }
     }
 
@@ -616,7 +627,7 @@ private fun CheckInCardFooter(
                 )
                 Text(
                     modifier = alignmentModifier
-                        .clickable { userSelected(status.user.username) }
+                        .clickable { userSelected(status.user.username, false, false) }
                         .padding(2.dp),
                     text = stringResource(
                         id = R.string.check_in_user_time,
@@ -624,7 +635,7 @@ private fun CheckInCardFooter(
                         dateString
                     ),
                     textAlign = TextAlign.End,
-                    style = AppTypography.labelLarge
+                    style = LocalFont.current.labelLarge
                 )
                 Icon(
                     modifier = alignmentModifier.padding(horizontal = 8.dp),
@@ -633,7 +644,6 @@ private fun CheckInCardFooter(
                 )
             }
             var menuExpanded by remember { mutableStateOf(false) }
-            val context = LocalContext.current
             Box {
                 Icon(
                     modifier = Modifier
@@ -664,7 +674,7 @@ private fun CheckInCardFooter(
                             },
                             onClick = {
                                 menuExpanded = false
-                                context.shareStatus(status)
+                                shareVisible = true
                             }
                         )
                         DropdownMenuItem(
@@ -752,7 +762,7 @@ private fun CheckInCardFooter(
             )
             Text(
                 text = status.event!!.name,
-                style = AppTypography.labelMedium
+                style = LocalFont.current.labelMedium
             )
         }
     }

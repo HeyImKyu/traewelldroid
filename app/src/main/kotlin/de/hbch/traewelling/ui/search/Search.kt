@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -48,7 +49,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.station.Station
 import de.hbch.traewelling.api.models.user.User
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.ui.composables.ProfilePicture
 import de.hbch.traewelling.util.getStationNameWithRL100
 import de.hbch.traewelling.util.useDebounce
@@ -77,6 +78,7 @@ fun Search(
     val viewModel: SearchViewModel = viewModel()
     val coroutineScope = rememberCoroutineScope()
 
+    var expanded by remember { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf(initQuery) }
     var debouncedQuery by rememberSaveable { mutableStateOf("") }
 
@@ -156,31 +158,38 @@ fun Search(
     }
 
     DockedSearchBar(
-        query = query,
-        onQueryChange = { query = it },
-        onSearch = { query = it },
-        active = active,
-        onActiveChange = { active = it },
         modifier = modifier,
-        placeholder = {
-            Text(searchInstruction)
-        },
-        trailingIcon = {
-            if (queryStations) {
-                if (isLocating) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    IconButton(onClick = { isLocating = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_locate),
-                            contentDescription = stringResource(id = R.string.locate)
-                        )
+        inputField = {
+            SearchBarDefaults.InputField(
+                modifier = Modifier.fillMaxWidth(),
+                query = query,
+                onQueryChange = { query = it },
+                onSearch = { expanded = false },
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                placeholder = {
+                    Text(searchInstruction)
+                },
+                trailingIcon = {
+                    if (queryStations) {
+                        if (isLocating) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            IconButton(onClick = { isLocating = true }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_locate),
+                                    contentDescription = stringResource(id = R.string.locate)
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        }
+            )
+        },
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
     ) {
         if (isLoading) {
             LinearProgressIndicator(
@@ -195,7 +204,7 @@ fun Search(
             if (queryStations && queryUsers) {
                 Text(
                     text = stringResource(id = R.string.stops),
-                    style = AppTypography.titleLarge,
+                    style = LocalFont.current.titleLarge,
                     modifier = Modifier.padding(4.dp)
                 )
             }
@@ -244,7 +253,7 @@ fun Search(
                 HorizontalDivider()
                 Text(
                     stringResource(id = R.string.users),
-                    style = AppTypography.titleLarge,
+                    style = LocalFont.current.titleLarge,
                     modifier = Modifier.padding(4.dp)
                 )
                 userResults.forEach {

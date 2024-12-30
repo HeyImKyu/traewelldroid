@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources tools:ignore="MissingTranslation" xmlns:tools="http://schemas.android.com/tools">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name" translatable="false">Träwelldroid</string>
     <string name="ok">OK</string>
     <string name="abort">Abort</string>
@@ -244,7 +244,7 @@
     <string name="last_updated">Last updated: %1$s</string>
     <string name="refresh">Refresh</string>
     <string name="greeting_morning">Good morning zZz</string>
-    <string name="greeting_day">Have a nice day</string>
+    <string name="greeting_day">Have a nice day!</string>
     <string name="greeting_evening">Good evening :)</string>
     <string name="greeting_night">You are awake long :O</string>
     <string name="stops">Stops</string>
@@ -298,7 +298,18 @@
     <string name="nobody">Nobody</string>
     <string name="friends">Friends (followed each other)</string>
     <string name="trusted">Trusted users</string>
+    <string name="manage_followers">Manage followers</string>
+    <string name="followers">Followers</string>
+    <string name="followings">Following</string>
+    <string name="follow_requests">Follow requests</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="follow_request_accepted">Follow request successfully accepted</string>
+    <string name="follow_request_declined">Follow request successfully declined</string>
+    <string name="remove_follower">Remove follower</string>
     <string name="remove">Remove</string>
+    <string name="remove_follower_success">Follower successfully removed</string>
+    <string name="remove_follower_error">Follower could not be removed. Please try again later.</string>
     <string name="expires_at">expires: %1$s</string>
     <string name="never">never</string>
     <string name="trusted_expires_never">Trust until removed</string>
@@ -310,4 +321,50 @@
     <string name="only_check_in_persons">Please only check-in co-travellers really travelling with you.</string>
     <string name="no_person_allowed_check_in">No one allowed you to check them in.</string>
     <string name="checked_in_by">You have been checked-in by %1$s</string>
+    <string name="share_as_image">Share as image</string>
+    <string name="share_tags_on_image">Show tags on image</string>
+    <string name="use_system_font">Use system font (restart required)</string>
+    <string name="error_occurred">An error occurred. Please try again.</string>
+    <string name="follows_you">Follows you</string>
+    <string name="year_is_over">%1$d is over</string>
+    <string name="discover_recap">Discover your year in review with your personal %1$d journey recap! 🚂</string>
+    <string name="take_me_back">Take me back!</string>
+    <string name="wrapped_is_being_prepared">Your year in review is being prepared. This can take a few seconds - please be patient. 😊</string>
+    <string name="wrapped_hey">Hey %1$s! 👋🏼</string>
+    <string name="wrapped_intro">Together we experienced many things. Let\'s have a look on your journey year %1$d and explore your recap! ⏳</string>
+    <string name="wrapped_title">Year in review</string>
+    <string name="wrapped_times"> times …</string>
+    <string name="wrapped_times_checked_in">… you have checked in! In total this were …</string>
+    <string name="and">and</string>
+    <string name="of_travel">of travel!</string>
+    <string name="wrapped_favorite_operator">Everyone has their favourite! ♥️</string>
+    <string name="wrapped_farest_travels">You travelled the longest distances with</string>
+    <string name="wrapped_in_a_total">in a total of</string>
+    <string name="wrapped_times_travels">The time travels so fast! ⏰</string>
+    <string name="wrapped_longest_travels">Most of the time you used the trains of</string>
+    <string name="wrapped_like_trains">You like their trains, don\'t you?</string>
+    <string name="wrapped_favorite_lines">Your favourite lines! 🤗</string>
+    <string name="wrapped_line_distance">The line with the most distance you used was</string>
+    <string name="operated_by">operated by</string>
+    <string name="wrapped_line_duration">The line you spent the most time with was</string>
+    <string name="wrapped_longest_distance_trip">Half a journey around the world! 🌍</string>
+    <string name="wrapped_your_furthest_trip">Your furthest trip was at %1$s</string>
+    <string name="wrapped_longest_duration_trip">Wow, so long! 🕰️</string>
+    <string name="wrapped_your_longest_trip">Your longest journey was at %1$s</string>
+    <string name="wrapped_fastest_trip">As fast as the wind! 🌬️</string>
+    <string name="wrapped_your_fastest_trip">You raced across the country at %1$s</string>
+    <string name="wrapped_slowest_trip">As slow as a snail… 🐌</string>
+    <string name="wrapped_your_slowest_trip">You took it relaxed at %1$s</string>
+    <string name="wrapped_unpunctual_trip">As late as the Bundesbahn! 😴</string>
+    <string name="wrapped_your_unpunctual_trip">Your most unpunctual trip on arrival was at %1$s</string>
+    <string name="wrapped_most_liked">Heartbreaker! 💘</string>
+    <string name="wrapped_your_most_liked_trip">You received the most likes (%1$d) at %2$s</string>
+    <string name="wrapped_no_likes">You received no likes this year.</string>
+    <string name="wrapped_top_destinations">Creature of habit 🦥</string>
+    <string name="wrapped_your_top_destinations">You visited those places a lot…</string>
+    <string name="wrapped_lonely_destinations">Explorer! 🧑🏼‍🔬</string>
+    <string name="wrapped_your_lonely_destinations">These places were only visited by you!</string>
+    <string name="wrapped_thank_you">Thank you 💙</string>
+    <string name="wrapped_thank_you_description">… for using Träwelldroid! Enjoy your future travels and let\'s get started together in a nice year of %1$d! 🚀</string>
+    <string name="timetable_api_error">The service providing timetable data could not be reached or is not responding. Please try again later.</string>
 </resources>

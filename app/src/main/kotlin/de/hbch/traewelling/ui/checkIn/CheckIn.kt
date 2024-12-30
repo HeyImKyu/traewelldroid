@@ -57,19 +57,20 @@ import de.hbch.traewelling.api.models.status.StatusBusiness
 import de.hbch.traewelling.api.models.status.StatusVisibility
 import de.hbch.traewelling.api.models.user.TrustedUser
 import de.hbch.traewelling.api.models.user.User
+import de.hbch.traewelling.logging.Logger
 import de.hbch.traewelling.shared.BottomSearchViewModel
 import de.hbch.traewelling.shared.CheckInViewModel
 import de.hbch.traewelling.shared.EventViewModel
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.MastodonEmojis
 import de.hbch.traewelling.shared.SharedValues
-import de.hbch.traewelling.theme.AppTypography
 import de.hbch.traewelling.theme.LocalColorScheme
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.ui.composables.ButtonWithIconAndText
 import de.hbch.traewelling.ui.composables.DataLoading
 import de.hbch.traewelling.ui.composables.DateTimeSelection
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.OutlinedButtonWithIconAndText
 import de.hbch.traewelling.ui.composables.ProfilePicture
 import de.hbch.traewelling.ui.composables.SwitchWithIconAndText
@@ -175,13 +176,30 @@ fun CheckIn(
 
     val selectedVisibility by checkInViewModel.statusVisibility.observeAsState()
     val selectedBusiness by checkInViewModel.statusBusiness.observeAsState()
-    val activeEvents by eventViewModel.activeEvents.observeAsState()
+    var eventsLoaded by remember { mutableStateOf(false) }
+    val activeEvents = remember { mutableStateListOf<Event>() }
     val selectedEvent by checkInViewModel.event.observeAsState()
     val selectedCoTravellers by checkInViewModel.coTravellers.observeAsState()
     val dialogModifier = Modifier.fillMaxWidth(0.99f)
 
+    LaunchedEffect(eventsLoaded) {
+        if (!eventsLoaded) {
+            eventsLoaded = true
+            coroutineScope.launch {
+                try {
+                    val events = eventViewModel.getEvents(checkInViewModel.departureTime!!)
+                    activeEvents.clear()
+                    activeEvents.addAll(events)
+                } catch (ex: Exception) {
+                    Logger.captureException(ex)
+                    eventsLoaded = false
+                }
+            }
+        }
+    }
+
     if (businessSelectionVisible) {
-        Dialog(
+        ContentDialog(
             modifier = dialogModifier,
             onDismissRequest = {
                 businessSelectionVisible = false
@@ -197,7 +215,7 @@ fun CheckIn(
     }
 
     if (visibilitySelectionVisible) {
-        Dialog(
+        ContentDialog(
             modifier = dialogModifier,
             onDismissRequest = {
                 visibilitySelectionVisible = false
@@ -212,15 +230,15 @@ fun CheckIn(
         }
     }
 
-    if (eventSelectionVisible && activeEvents !== null) {
-        Dialog(
+    if (eventSelectionVisible) {
+        ContentDialog(
             modifier = dialogModifier,
             onDismissRequest = {
                 eventSelectionVisible = false
             }
         ) {
             SelectEventDialog(
-                activeEvents = activeEvents!!,
+                activeEvents = activeEvents,
                 eventSelectedAction = {
                     checkInViewModel.event.postValue(it)
                     eventSelectionVisible = false
@@ -230,7 +248,7 @@ fun CheckIn(
     }
 
     if (coTravellerSelectionVisible) {
-        Dialog(
+        ContentDialog(
             modifier = dialogModifier,
             onDismissRequest = {
                 coTravellerSelectionVisible = false
@@ -298,7 +316,7 @@ fun CheckIn(
                                     Column {
                                         Text(
                                             text = stringResource(id = R.string.mastodon_emoji),
-                                            style = AppTypography.titleLarge,
+                                            style = LocalFont.current.titleLarge,
                                             color = LocalColorScheme.current.onPrimary
                                         )
                                         Text(
@@ -332,7 +350,7 @@ fun CheckIn(
                         Text(
                             modifier = Modifier.padding(4.dp),
                             text = "${statusText.text.count()}/280",
-                            style = AppTypography.labelSmall
+                            style = LocalFont.current.labelSmall
                         )
                         AnimatedVisibility(displayUserResults) {
                             Row(
@@ -482,7 +500,7 @@ fun CheckIn(
                                             Column {
                                                 Text(
                                                     text = stringResource(id = R.string.select_co_travellers),
-                                                    style = AppTypography.titleLarge,
+                                                    style = LocalFont.current.titleLarge,
                                                     color = LocalColorScheme.current.onPrimary
                                                 )
                                                 Text(
@@ -492,19 +510,21 @@ fun CheckIn(
                                                 Text(
                                                     text = stringResource(id = R.string.only_check_in_persons),
                                                     color = LocalColorScheme.current.onPrimary,
-                                                    style = AppTypography.labelMedium
+                                                    style = LocalFont.current.labelMedium
                                                 )
                                             }
                                         }
                                 }
-                                OutlinedButtonWithIconAndText(
-                                    stringId = R.string.select_co_travellers,
-                                    drawableId = R.drawable.ic_also_check_in,
-                                    onClick = {
-                                        coTravellerSelectionVisible = true
-                                    },
-                                    modifier = coTravellerButtonModifier
-                                )
+                                if (!isEditMode) {
+                                    OutlinedButtonWithIconAndText(
+                                        stringId = R.string.select_co_travellers,
+                                        drawableId = R.drawable.ic_also_check_in,
+                                        onClick = {
+                                            coTravellerSelectionVisible = true
+                                        },
+                                        modifier = coTravellerButtonModifier
+                                    )
+                                }
                                 if (selectedCoTravellers?.isNotEmpty() == true) {
                                     Row(
                                         modifier = Modifier
@@ -584,7 +604,7 @@ fun CheckIn(
                             }
 
                             // Event button
-                            if (!isEditMode && activeEvents?.isNotEmpty() == true) {
+                            if (activeEvents.isNotEmpty()) {
                                 OutlinedButtonWithIconAndText(
                                     modifier = Modifier.fillMaxWidth(),
                                     drawableId = if (selectedEvent == null)
@@ -613,7 +633,7 @@ fun CheckIn(
                     if (isEditMode) {
                         val currentDateTime = ZonedDateTime.now()
                         val plannedDeparture = checkInViewModel.departureTime
-                        if (plannedDeparture != null && currentDateTime.isAfter(plannedDeparture)) {
+                        if (plannedDeparture != null && currentDateTime.isAfter(plannedDeparture.minusMinutes(30))) {
                             DateTimeSelection(
                                 initDate = checkInViewModel.manualDepartureTime,
                                 plannedDate = checkInViewModel.departureTime,
@@ -623,7 +643,7 @@ fun CheckIn(
                             )
                         }
                         val plannedArrival = checkInViewModel.arrivalTime
-                        if (plannedArrival != null && currentDateTime.isAfter(plannedArrival)) {
+                        if (plannedArrival != null && currentDateTime.isAfter(plannedArrival.minusMinutes(30))) {
                             DateTimeSelection(
                                 initDate = checkInViewModel.manualArrivalTime,
                                 plannedDate = checkInViewModel.arrivalTime,
@@ -682,7 +702,7 @@ private fun SelectStatusVisibilityDialog(
         Text(
             modifier = Modifier.padding(bottom = 8.dp),
             text = stringResource(id = R.string.title_select_visibility),
-            style = AppTypography.titleLarge,
+            style = LocalFont.current.titleLarge,
             color = LocalColorScheme.current.primary
         )
         StatusVisibility.entries.forEach { visibility ->
@@ -702,7 +722,7 @@ private fun SelectStatusVisibilityDialog(
                 )
                 Text(
                     text = stringResource(id = visibility.title),
-                    style = AppTypography.titleLarge
+                    style = LocalFont.current.titleLarge
                 )
             }
         }
@@ -723,7 +743,7 @@ private fun SelectStatusBusinessDialog(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             text = stringResource(id = R.string.title_select_business),
-            style = AppTypography.titleLarge,
+            style = LocalFont.current.titleLarge,
             color = LocalColorScheme.current.primary
         )
         StatusBusiness.entries.forEach { business ->
@@ -743,7 +763,7 @@ private fun SelectStatusBusinessDialog(
                 )
                 Text(
                     text = stringResource(id = business.title),
-                    style = AppTypography.titleLarge
+                    style = LocalFont.current.titleLarge
                 )
             }
         }
@@ -768,7 +788,7 @@ private fun SelectEventDialog(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             text = stringResource(id = R.string.title_select_event),
-            style = AppTypography.titleLarge,
+            style = LocalFont.current.titleLarge,
             color = LocalColorScheme.current.primary
         )
         Text(
@@ -776,7 +796,7 @@ private fun SelectEventDialog(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             text = stringResource(id = R.string.hint_event_missing),
-            style = AppTypography.labelLarge
+            style = LocalFont.current.labelLarge
         )
         events.forEach { event ->
             Row(
@@ -807,7 +827,7 @@ private fun SelectEventDialog(
                 ) {
                     Text(
                         text = event?.name ?: stringResource(id = R.string.reset_selection),
-                        style = AppTypography.titleLarge,
+                        style = LocalFont.current.titleLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -821,7 +841,7 @@ private fun SelectEventDialog(
                                 getLocalDateString(event.end)
                             )
                         },
-                        style = AppTypography.titleSmall
+                        style = LocalFont.current.titleSmall
                     )
                 }
                 Icon(
@@ -913,11 +933,11 @@ fun SelectCoTravellers(
     ) {
         Text(
             text = stringResource(id = R.string.select_co_travellers),
-            style = AppTypography.titleLarge
+            style = LocalFont.current.titleLarge
         )
         Text(
             text = stringResource(id = R.string.only_check_in_persons),
-            style = AppTypography.labelMedium
+            style = LocalFont.current.labelMedium
         )
         if (isLoading) {
             DataLoading()

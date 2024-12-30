@@ -3,12 +3,16 @@ package de.hbch.traewelling.ui.user
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import de.hbch.traewelling.api.TraewellingApi
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.status.Status
 import de.hbch.traewelling.api.models.status.StatusPage
 import de.hbch.traewelling.api.models.user.User
 import de.hbch.traewelling.logging.Logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,31 +23,58 @@ class UserStatusViewModel : ViewModel() {
     val user = MutableLiveData<User?>(null)
     var isRefreshing = MutableLiveData(false)
 
-    fun loadUser(username: String?) {
+    fun loadUser(
+        username: String?,
+        searchRequired: Boolean = false
+    ) {
         if (username != null) {
             isRefreshing.postValue(true)
-            TraewellingApi.userService.getUser(username)
-                .enqueue(object : Callback<Data<User>> {
-                    override fun onResponse(
-                        call: Call<Data<User>>,
-                        response: Response<Data<User>>
-                    ) {
-                        isRefreshing.postValue(false)
-                        if (response.isSuccessful) {
-                            val respUser = response.body()
-                            if (respUser != null) {
-                                user.postValue(respUser.data)
-                                resetStatusesForUser(respUser.data.username)
+            if (searchRequired) {
+                searchForUser(username)
+            } else {
+                TraewellingApi.userService.getUser(username)
+                    .enqueue(object : Callback<Data<User>> {
+                        override fun onResponse(
+                            call: Call<Data<User>>,
+                            response: Response<Data<User>>
+                        ) {
+                            isRefreshing.postValue(false)
+                            if (response.isSuccessful) {
+                                val respUser = response.body()
+                                if (respUser != null) {
+                                    user.postValue(respUser.data)
+                                    resetStatusesForUser(respUser.data.username)
+                                }
+                                return
+                            } else if (response.code() == 403) {
+                                searchForUser(username)
                             }
-                            return
                         }
-                    }
 
-                    override fun onFailure(call: Call<Data<User>>, t: Throwable) {
-                        isRefreshing.postValue(false)
-                        Logger.captureException(t)
+                        override fun onFailure(call: Call<Data<User>>, t: Throwable) {
+                            isRefreshing.postValue(false)
+                            Logger.captureException(t)
+                        }
+                    })
+            }
+        }
+    }
+
+    fun searchForUser(username: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.Main.immediate) {
+                try {
+                    val respUsers =
+                        TraewellingApi.userService.searchUsers(username).data
+                    if (respUsers.isNotEmpty() && respUsers[0].username == username) {
+                        user.postValue(respUsers[0])
                     }
-                })
+                } catch (e: Exception) {
+                    Logger.captureException(e)
+                } finally {
+                    isRefreshing.postValue(false)
+                }
+            }
         }
     }
 

@@ -27,7 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.hbch.traewelling.R
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.ui.composables.ColumnChart
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.FilterChipGroup
 import de.hbch.traewelling.ui.composables.OutlinedButtonWithIconAndText
 import de.hbch.traewelling.ui.user.getDurationString
@@ -91,7 +91,7 @@ fun Statistics(
     }
 
     if (dateRangePickerVisible) {
-        Dialog(
+        ContentDialog(
             onDismissRequest = { dateRangePickerVisible = false }
         ) {
             Column(
@@ -146,13 +146,13 @@ fun Statistics(
         )
         val unitMap = mutableMapOf<StatisticsUnit, String>()
         unitMap.putAll(
-            StatisticsUnit.values().map {
+            StatisticsUnit.entries.map {
                 Pair(it, stringResource(id = it.getStringId()))
             }
         )
         val typeMap = mutableMapOf<StatisticsType, String>()
         typeMap.putAll(
-            StatisticsType.values().map {
+            StatisticsType.entries.map {
                 Pair(it, stringResource(id = it.getStringId()))
             }
         )

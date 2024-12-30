@@ -19,10 +19,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Traewelling"
         android:enableOnBackInvokedCallback="true"
-        tools:targetApi="34">
+        tools:targetApi="35">
+
+        <provider
+            android:name=".util.TraewelldroidFileProvider"
+            android:authorities="de.traewelldroid.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <activity
             android:name=".ui.info.InfoActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.wrapped.WrappedActivity"
             android:exported="false" />
 
         <meta-data
@@ -49,6 +63,7 @@
                 <data android:pathPrefix="/@" />
                 <data android:pathPrefix="/stats/daily/" />
                 <data android:pathPrefix="/auth/login" />
+                <data android:pathPrefix="/manage-followers" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />

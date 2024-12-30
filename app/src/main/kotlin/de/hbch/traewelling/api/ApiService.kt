@@ -27,6 +27,7 @@ import de.hbch.traewelling.api.models.user.TrustedUser
 import de.hbch.traewelling.api.models.user.User
 import de.hbch.traewelling.api.models.user.UserSettings
 import de.hbch.traewelling.api.models.webhook.WebhookUserCreateRequest
+import de.hbch.traewelling.api.models.wrapped.YearInReviewData
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Response
@@ -206,7 +207,7 @@ interface TravelService {
         @Path("id") stationId: Int,
         @Query("when") time: ZonedDateTime,
         @Query("travelType") filter: String
-    ): HafasTripPage
+    ): Response<HafasTripPage>
 
     @GET("trains/station/autocomplete/{station}")
     suspend fun autoCompleteStationSearch(
@@ -277,6 +278,41 @@ interface UserService {
         @Body settings: SaveUserSettings
     ): Response<Data<UserSettings>>
 
+    @GET("user/self/followers")
+    suspend fun getFollowers(
+        @Query("page") page: Int
+    ): Response<Data<List<User>>>
+
+    @DELETE("user/self/followers/{userId}")
+    suspend fun removeFollower(
+        @Path("userId") userId: Int
+    ): Response<Unit>
+
+    @GET("user/self/followings")
+    suspend fun getFollowings(
+        @Query("page") page: Int
+    ): Response<Data<List<User>>>
+
+    @GET("user/self/follow-requests")
+    suspend fun getFollowRequests(
+        @Query("page") page: Int
+    ): Response<Data<List<User>>>
+
+    @PUT("user/self/follow-requests/{userId}")
+    suspend fun acceptFollowRequest(
+        @Path("userId") userId: Int
+    ): Response<Unit>
+
+    @DELETE("user/self/follow-requests/{userId}")
+    suspend fun declineFollowRequest(
+        @Path("userId") userId: Int
+    ): Response<Unit>
+
+    @DELETE("user/{userId}/follow")
+    suspend fun removeFollowing(
+        @Path("userId") userId: Int
+    ): Response<Unit>
+
     @GET("user/self/trusted")
     suspend fun getTrustedUsers(): Response<Data<List<TrustedUser>>>
 
@@ -313,6 +349,11 @@ interface ReportService {
     ): Response<Unit>
 }
 
+interface WrappedService {
+    @GET("year-in-review")
+    suspend fun getYearInReview(): Response<YearInReviewData>
+}
+
 object TraewellingApi {
     var jwt: String = ""
 
@@ -336,6 +377,9 @@ object TraewellingApi {
     }
     val reportService: ReportService by lazy {
         trwlRetrofit.create(ReportService::class.java)
+    }
+    val wrappedService: WrappedService by lazy {
+        trwlRetrofit.create(WrappedService::class.java)
     }
 }
 

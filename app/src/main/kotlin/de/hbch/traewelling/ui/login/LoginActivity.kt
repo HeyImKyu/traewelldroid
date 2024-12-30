@@ -2,11 +2,14 @@ package de.hbch.traewelling.ui.login
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -47,6 +50,9 @@ class LoginActivity : ComponentActivity() {
         initAuthInitial()
 
         setContent {
+            enableEdgeToEdge(
+                navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
+            )
             MainTheme {
                 LoginScreen(
                     loginAction = {

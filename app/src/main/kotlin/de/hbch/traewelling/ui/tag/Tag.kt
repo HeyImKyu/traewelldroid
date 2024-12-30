@@ -42,10 +42,10 @@ import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.status.StatusVisibility
 import de.hbch.traewelling.api.models.status.Tag
 import de.hbch.traewelling.api.models.status.TagType
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.ui.composables.ButtonWithIconAndText
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.OutlinedButtonWithIconAndText
 import kotlinx.coroutines.launch
 
@@ -82,7 +82,7 @@ fun StatusTags(
     }
 
     if (tagFormVisible) {
-        Dialog(
+        ContentDialog(
             onDismissRequest = { tagFormVisible = false }
         ) {
             Box(
@@ -226,7 +226,7 @@ fun TagForm(
         val title = if (isCreationMode) R.string.add_tag else R.string.edit_tag
         Text(
             text = stringResource(id = title),
-            style = AppTypography.titleLarge
+            style = LocalFont.current.titleLarge
         )
         if (isCreationMode && availableTagsToAdd.isEmpty()) {
             Text(
@@ -362,7 +362,7 @@ fun TagForm(
                                 deleting = true
                                 tagViewModel.deleteTag(
                                     statusId,
-                                    tagData!!,
+                                    tagData,
                                     { onSaveSucceeded() },
                                     { }
                                 )

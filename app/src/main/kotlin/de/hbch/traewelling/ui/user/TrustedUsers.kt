@@ -35,11 +35,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.user.TrustedUser
 import de.hbch.traewelling.api.models.user.User
-import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.ui.composables.ButtonWithIconAndText
 import de.hbch.traewelling.ui.composables.DataLoading
 import de.hbch.traewelling.ui.composables.DateTimeSelection
-import de.hbch.traewelling.ui.composables.Dialog
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.composables.ProfilePicture
 import de.hbch.traewelling.ui.composables.SwitchWithIconAndText
 import de.hbch.traewelling.ui.search.SearchViewModel
@@ -73,7 +73,7 @@ fun TrustedUsers(
     }
 
     if (addDialogVisible) {
-        Dialog(
+        ContentDialog(
             onDismissRequest = {
                 addDialogVisible = false
             },
@@ -108,7 +108,7 @@ fun TrustedUsers(
                 Text(
                     text = stringResource(id = R.string.these_can_check_you_in),
                     modifier = Modifier.fillMaxWidth(),
-                    style = AppTypography.labelMedium
+                    style = LocalFont.current.labelMedium
                 )
                 trustedUsers.forEach { user ->
                     var isRemoving by remember { mutableStateOf(false) }
@@ -197,7 +197,7 @@ fun AddTrustedUser(
     ) {
         Text(
             text = stringResource(id = R.string.add_trusted_user),
-            style = AppTypography.titleLarge
+            style = LocalFont.current.titleLarge
         )
         OutlinedTextField(
             value = userSearch,

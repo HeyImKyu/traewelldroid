@@ -20,14 +20,15 @@ data class User(
     @SerializedName("following") val following: Boolean,
     @SerializedName("followPending") val followRequestPending: Boolean,
     @SerializedName("muted") val muted: Boolean,
-    val defaultStatusVisibility: StatusVisibility?
+    val defaultStatusVisibility: StatusVisibility?,
+    val followedBy: Boolean
 ) {
     val averageSpeed: Double get() = (distance / 1000.0) / (duration / 60.0)
 }
 
 data class LightUser(
     @SerializedName("id") val id: Int,
-    @SerializedName("displayName") val name: String,
+    @SerializedName("displayName", alternate = ["name"]) val name: String,
     @SerializedName("username") val username: String,
     @SerializedName("profilePicture") val avatarUrl: String,
     @SerializedName("mastodonUrl") val mastodonUrl: String?
