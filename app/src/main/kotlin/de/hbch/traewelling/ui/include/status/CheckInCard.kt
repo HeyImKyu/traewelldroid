@@ -63,6 +63,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -96,7 +97,7 @@ import java.time.ZonedDateTime
 import java.util.Locale
 
 @Composable
-fun SegmentedLinearProgressIndicator(progress: Float) {
+fun SegmentedLinearProgressIndicator(progress: Float, height: Dp, margin: Dp) {
     val colors = listOf(
         Color(0xFF55CDFC), // Light Blue
         Color(0xFFF7A8B8), // Pink
@@ -108,7 +109,8 @@ fun SegmentedLinearProgressIndicator(progress: Float) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(8.dp)
+            .padding(horizontal = margin)
+            .height(height)
             .clip(shape = RoundedCornerShape(10.dp))
             .background(color = Color.Gray)
     ) {
@@ -282,7 +284,9 @@ fun CheckInCard(
                     )
                 }
                 SegmentedLinearProgressIndicator(
-                    progress = if (progressAnimation.isNaN()) 0f else progressAnimation
+                    progress = if (progressAnimation.isNaN()) 0f else progressAnimation,
+                    height = 8.dp,
+                    margin = 0.dp
                 )
                 CheckInCardFooter(
                     modifier = Modifier.fillMaxWidth(),

@@ -106,9 +106,10 @@ fun ActiveStatusBar(
                     )
                 }
             }
-            LinearProgressIndicator(
-                progress = { progressAnimation },
-                modifier = Modifier.fillMaxWidth()
+            SegmentedLinearProgressIndicator(
+                progress = if (progressAnimation.isNaN()) 0f else progressAnimation,
+                height = 4.dp,
+                margin = 8.dp
             )
         }
     }
