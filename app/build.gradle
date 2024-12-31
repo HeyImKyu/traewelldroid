@@ -78,7 +78,7 @@ android {
             manifestPlaceholders["SENTRY_DSN"] = "https://6d3e121491134a8ea8ed3f560b03b5ec@bugs.traewelldroid.de/1"
             manifestPlaceholders["SENTRY_ENV"] = "production"
 
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.debug
         }
         debug {
             buildConfigField "String", "OAUTH_REDIRECT_URL", "\"https://app.traewelldroid.de/oauth2redirect\""
