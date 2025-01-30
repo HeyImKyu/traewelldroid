@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,14 +54,19 @@ fun SelectDestination(
 ) {
     val selectDestinationViewModel: SelectDestinationViewModel = viewModel()
     var trip by remember { mutableStateOf<HafasTrainTrip?>(null) }
+    var dataLoading by remember { mutableStateOf(false) }
+    var dataError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
 
     LaunchedEffect(trip) {
         if (trip == null) {
+            dataLoading = true
             selectDestinationViewModel.getTrip(
                 checkInViewModel.tripId,
                 checkInViewModel.lineName,
                 checkInViewModel.startStationId,
                 { tripData ->
+                    dataLoading = false
                     val relevantStations = tripData.stopovers.subList(
                         tripData.stopovers.indexOf(
                             tripData.stopovers.find {
@@ -72,7 +78,11 @@ fun SelectDestination(
                     tripData.stopovers = relevantStations
                     trip = tripData
                 },
-                { }
+                {
+                    dataLoading = false
+                    dataError = true
+                    errorMessage = it ?: ""
+                }
             )
         }
     }
@@ -86,34 +96,57 @@ fun SelectDestination(
     ) {
         ElevatedCard {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (trip == null) {
+                if (dataLoading) {
                     DataLoading()
                 } else {
-                    FromToTextRow(
-                        category = trip!!.safeProductType,
-                        lineName = trip!!.lineName,
-                        lineId = checkInViewModel.lineId,
-                        operatorCode = checkInViewModel.operatorCode,
-                        destination = trip!!.destination.name
-                    )
-                    Column(
-                        modifier = Modifier.padding(top = 16.dp)
-                    ) {
-                        trip!!.stopovers.forEachIndexed { index, tripStation ->
-                            TravelStopListItem(
-                                modifier = Modifier.clickable(onClick = {
-                                    if (!tripStation.isCancelled) {
-                                        checkInViewModel.arrivalTime = tripStation.arrivalPlanned
-                                        checkInViewModel.destination = tripStation.name
-                                        checkInViewModel.destinationStationId = tripStation.id
-                                        onStationSelected(tripStation)
-                                    }
-                                }),
-                                station = tripStation,
-                                isLastStop = index == trip!!.stopovers.size - 1
-                            )
+                    if (dataError) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_error),
+                            contentDescription = null,
+                            tint = Color.Red,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.timetable_api_error),
+                            textAlign = TextAlign.Center,
+                            style = LocalFont.current.bodyLarge
+                        )
+                        Text(
+                            text = errorMessage,
+                            textAlign = TextAlign.Center,
+                            style = LocalFont.current.bodySmall,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                    } else if (trip != null) {
+                        FromToTextRow(
+                            category = trip!!.safeProductType,
+                            lineName = trip!!.lineName,
+                            lineId = checkInViewModel.lineId,
+                            operatorCode = checkInViewModel.operatorCode,
+                            destination = trip!!.destination.name,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Column(
+                            modifier = Modifier.padding(top = 16.dp)
+                        ) {
+                            trip!!.stopovers.forEachIndexed { index, tripStation ->
+                                TravelStopListItem(
+                                    modifier = Modifier.clickable(onClick = {
+                                        if (!tripStation.isCancelled) {
+                                            checkInViewModel.arrivalTime =
+                                                tripStation.arrivalPlanned
+                                            checkInViewModel.destination = tripStation.name
+                                            checkInViewModel.destinationStationId = tripStation.id
+                                            onStationSelected(tripStation)
+                                        }
+                                    }),
+                                    station = tripStation,
+                                    isLastStop = index == trip!!.stopovers.size - 1
+                                )
+                            }
                         }
                     }
                 }

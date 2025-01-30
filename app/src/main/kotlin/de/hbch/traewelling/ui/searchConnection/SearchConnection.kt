@@ -87,6 +87,7 @@ fun SearchConnection(
     val coroutineScope = rememberCoroutineScope()
 
     var timeTableError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     var hafasTripPage by remember { mutableStateOf<HafasTripPage?>(null) }
     var stationId by rememberSaveable { mutableIntStateOf(station) }
     val stationName by remember { derivedStateOf { hafasTripPage?.meta?.station?.name ?: "" } }
@@ -106,7 +107,8 @@ fun SearchConnection(
             val tripPage = viewModel.searchConnections(stationId, searchDate, selectedFilter)
             loading = false
             hafasTripPage = tripPage.second
-            timeTableError = tripPage.first == 502
+            timeTableError = tripPage.first >= 500
+            errorMessage = tripPage.third?.message ?: ""
         }
     }
 
@@ -136,6 +138,12 @@ fun SearchConnection(
                 text = stringResource(R.string.timetable_api_error),
                 textAlign = TextAlign.Center,
                 style = LocalFont.current.bodyLarge
+            )
+            Text(
+                text = errorMessage,
+                textAlign = TextAlign.Center,
+                style = LocalFont.current.bodySmall,
+                modifier = Modifier.padding(top = 16.dp)
             )
         } else {
             ElevatedCard {
@@ -367,8 +375,8 @@ fun SearchConnection(
                 isCancelled = trip.isCancelled,
                 destination = getLastDestination(trip),
                 departureStation =
-                    if (!trip.station?.name.isNullOrBlank() && stationId != null && trip.station?.id != stationId && displayDivergentStop)
-                        trip.station?.name
+                    if (!trip.station?.name.isNullOrBlank() && stationId != null && trip.station.id != stationId && displayDivergentStop)
+                        trip.station.name
                     else
                         null,
                 hafasLine = trip.line,

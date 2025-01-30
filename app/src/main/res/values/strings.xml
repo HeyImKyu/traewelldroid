@@ -367,4 +367,8 @@
     <string name="wrapped_thank_you">Thank you 💙</string>
     <string name="wrapped_thank_you_description">… for using Träwelldroid! Enjoy your future travels and let\'s get started together in a nice year of %1$d! 🚀</string>
     <string name="timetable_api_error">The service providing timetable data could not be reached or is not responding. Please try again later.</string>
+    <string name="notice">Notice</string>
+    <string name="trwl_api_error">Currently there are ongoing service issues with Träwelling (traewelling.de). Please check the Träwelling website.</string>
+    <string name="traewelling_de" translatable="false">traewelling.de</string>
+    <string name="no_map_for_check_in">Currently there is no map view available for this check-in.</string>
 </resources>

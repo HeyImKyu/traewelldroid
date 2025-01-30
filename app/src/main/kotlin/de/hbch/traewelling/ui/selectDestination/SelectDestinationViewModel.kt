@@ -16,7 +16,7 @@ class SelectDestinationViewModel : ViewModel() {
         lineName: String,
         start: Int,
         successfulCallback: (HafasTrainTrip) -> Unit,
-        failureCallback: () -> Unit
+        failureCallback: (String?) -> Unit
     ) {
         TraewellingApi.travelService.getTrip(tripId, lineName, start)
             .enqueue(object: Callback<Data<HafasTrainTrip>> {
@@ -31,10 +31,11 @@ class SelectDestinationViewModel : ViewModel() {
                             return
                         }
                     }
-                    failureCallback()
+                    failureCallback(response.errorBody()?.string())
                 }
                 override fun onFailure(call: Call<Data<HafasTrainTrip>>, t: Throwable) {
                     Logger.captureException(t)
+                    failureCallback(t.message)
                 }
             })
     }

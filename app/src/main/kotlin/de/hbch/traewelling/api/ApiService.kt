@@ -93,8 +93,8 @@ interface AuthService {
 interface StatisticsService {
     @GET("statistics")
     fun getPersonalStatistics(
-        @Query("from") from: LocalDate,
-        @Query("until") until: LocalDate
+        @Query("from") from: ZonedDateTime,
+        @Query("until") until: ZonedDateTime
     ): Call<Data<PersonalStatistics>>
 
     @GET("statistics/daily/{date}?withPolylines=true")

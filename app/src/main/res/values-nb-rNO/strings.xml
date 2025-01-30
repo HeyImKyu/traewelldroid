@@ -224,7 +224,7 @@
     <string name="select_co_travellers">Velg medreisende</string>
     <string name="only_check_in_persons">Vennligst sjekk inn bare medreisende som reiser faktisk sammen med deg.</string>
     <string name="no_person_allowed_check_in">Ingen har tillatt deg å sjekke dem inn.</string>
-    <string name="checked_in_by">Du har blit sjekket inn av %1$s</string>
+    <string name="checked_in_by">Du har blitt sjekket inn av %1$s</string>
     <plurals name="days">
         <item quantity="one">dag</item>
         <item quantity="other">dager</item>

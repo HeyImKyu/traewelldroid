@@ -63,8 +63,8 @@ fun Statistics(
         if (range != null) {
             statisticsViewModel.getPersonalStatisticsForSelectedTimeRange()
             dateRangePickerState.setSelection(
-                range.first.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                LocalDateTime.of(range.second, LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                range.first.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli(),
+                LocalDateTime.of(range.second, LocalTime.MAX).atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()
             )
         }
     }

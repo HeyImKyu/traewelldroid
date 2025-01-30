@@ -13,6 +13,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.time.LocalDate
+import java.time.ZoneId
 
 class StatisticsViewModel : ViewModel() {
 
@@ -34,8 +35,8 @@ class StatisticsViewModel : ViewModel() {
         val range = dateRange.value ?: initDateRange()
         dateRange.postValue(range)
 
-        val from = range.first
-        val until = range.second
+        val from = range.first.atStartOfDay(ZoneId.systemDefault())
+        val until = range.second.atStartOfDay(ZoneId.systemDefault()).withHour(23).withMinute(59).withSecond(59)
 
         TraewellingApi
             .statisticsService

@@ -340,4 +340,7 @@
     <string name="wrapped_thank_you">Danke 💙</string>
     <string name="wrapped_thank_you_description">… dass du Träwelldroid nutzt! Genieße deine künftigen Fahrten und lass uns gemeinsam in ein tolles Jahr %1$d starten! 🚀</string>
     <string name="timetable_api_error">Der Dienst, der die Fahrplandaten bereitstellt, konnte nicht erreicht werden oder antwortet nicht. Bitte versuche es später erneut.</string>
+    <string name="notice">Hinweis</string>
+    <string name="trwl_api_error">Aktuell gibt es vermehrt Probleme bei Träwelling (traewelling.de), daher ist die Funktionalität eingeschränkt. Bitte prüfe die Träwelling-Webseite.</string>
+    <string name="no_map_for_check_in">Für diesen Check-In steht moment leider keine Kartenansicht zur Verfügung.</string>
 </resources>

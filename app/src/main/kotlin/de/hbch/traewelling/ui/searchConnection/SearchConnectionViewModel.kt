@@ -12,7 +12,7 @@ class SearchConnectionViewModel: ViewModel() {
         stationId: Int,
         departureTime: ZonedDateTime,
         filterType: FilterType?
-    ): Pair<Int, HafasTripPage?> {
+    ): Triple<Int, HafasTripPage?, Exception?> {
         return try {
             val tripPage = TraewellingApi
                 .travelService
@@ -22,9 +22,9 @@ class SearchConnectionViewModel: ViewModel() {
                     filterType?.filterQuery ?: ""
                 )
 
-            Pair(tripPage.code(), tripPage.body())
-        } catch (_: Exception) {
-            return Pair(500, null)
+            Triple(tripPage.code(), tripPage.body(), Exception(tripPage.errorBody()?.string() ?: ""))
+        } catch (ex: Exception) {
+            return Triple(500, null, ex)
         }
     }
 

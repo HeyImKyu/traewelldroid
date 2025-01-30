@@ -153,12 +153,15 @@ fun getPolyLinesFromFeatureCollection(featureCollection: FeatureCollection?, col
         feature.geometry?.coordinates?.forEach { coordinate ->
             polyline.addPoint(
                 GeoPoint(
-                    coordinate[1],
-                    coordinate[0]
+                    coordinate[1] ?: 0.0,
+                    coordinate[0] ?: 0.0
                 )
             )
         }
-        polyLines.add(polyline)
+        // Skip erroneous polylines which have (0/0) as a point
+        if (!polyline.actualPoints.any { it.latitude == 0.0 && it.longitude == 0.0 }) {
+            polyLines.add(polyline)
+        }
 
         polyline.outlinePaint.color = color
     }

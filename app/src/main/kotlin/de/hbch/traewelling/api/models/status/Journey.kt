@@ -11,7 +11,7 @@ data class Journey(
     @SerializedName("hafasId") val hafasTripId: String,
     val category: ProductType?,
     @SerializedName("lineName") val line: String,
-    val journeyNumber: Int?,
+    val journeyNumber: String?,
     val distance: Int,
     val points: Int,
     val duration: Int,

@@ -87,6 +87,7 @@ fun StatusDetail(
         viewModelStoreOwner = LocalContext.current as ViewModelStoreOwner
     )
     val displayTagsInCard by settingsViewModel.displayTagsInCard.observeAsState(true)
+    var displayMap by remember { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(status) {
         if (status == null) {
@@ -112,23 +113,26 @@ fun StatusDetail(
             StatusDetailMap(
                 modifier = mapModifier.align(Alignment.TopCenter),
                 statusId = statusId,
-                statusDetailViewModel = statusDetailViewModel
+                statusDetailViewModel = statusDetailViewModel,
+                mapLoaded = { displayMap = it }
             )
-            IconToggleButton(
-                modifier = Modifier.align(Alignment.TopEnd),
-                checked = mapExpanded,
-                onCheckedChange = {
-                    mapExpanded = it
-                },
-                colors = IconButtonDefaults.filledIconToggleButtonColors()
-            ) {
-                AnimatedContent(mapExpanded, label = "MapExpansionIcon") {
-                    val iconSource =
-                        if (it) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen
-                    Icon(
-                        painter = painterResource(id = iconSource),
-                        contentDescription = null
-                    )
+            if (displayMap == true) {
+                IconToggleButton(
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    checked = mapExpanded,
+                    onCheckedChange = {
+                        mapExpanded = it
+                    },
+                    colors = IconButtonDefaults.filledIconToggleButtonColors()
+                ) {
+                    AnimatedContent(mapExpanded, label = "MapExpansionIcon") {
+                        val iconSource =
+                            if (it) R.drawable.ic_fullscreen_exit else R.drawable.ic_fullscreen
+                        Icon(
+                            painter = painterResource(id = iconSource),
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }
@@ -159,6 +163,13 @@ fun StatusDetail(
                         defaultVisibility = loggedInUserViewModel?.defaultStatusVisibility
                             ?: StatusVisibility.PUBLIC,
                         tags = status?.tags ?: listOf()
+                    )
+                }
+                if (displayMap == false) {
+                    Text(
+                        text = stringResource(R.string.no_map_for_check_in),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
                     )
                 }
                 status?.likes?.let {
@@ -239,7 +250,8 @@ fun StatusDetail(
 private fun StatusDetailMap(
     modifier: Modifier = Modifier,
     statusId: Int,
-    statusDetailViewModel: StatusDetailViewModel
+    statusDetailViewModel: StatusDetailViewModel,
+    mapLoaded: (Boolean) -> Unit,
 ) {
     val color = PolylineColor.toArgb()
     val polyLines = remember { mutableStateListOf<Polyline>() }
@@ -252,7 +264,11 @@ private fun StatusDetailMap(
             statusDetailViewModel.getPolylineForStatus(
                 statusId = statusId,
                 successfulCallback = {
-                    polyLines.addAll(getPolyLinesFromFeatureCollection(it, color))
+                    val polylines = getPolyLinesFromFeatureCollection(it, color)
+                    polyLines.addAll(polylines)
+                    if (polylines.isEmpty()) {
+                        mapLoaded(false)
+                    }
                 },
                 failureCallback = {}
             )
@@ -269,6 +285,7 @@ private fun StatusDetailMap(
 
             val bounds = getBoundingBoxFromPolyLines(polyLines)
             map.zoomToBoundingBox(bounds.increaseByScale(1.1f), false)
+            mapLoaded(true)
         }
     }
 
