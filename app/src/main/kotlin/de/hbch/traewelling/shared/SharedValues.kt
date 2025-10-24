@@ -1,7 +1,7 @@
 package de.hbch.traewelling.shared
 
-import android.net.Uri
 import net.openid.appauth.AuthorizationServiceConfiguration
+import androidx.core.net.toUri
 
 object SharedValues {
     const val SS_JWT = "JWT"
@@ -19,10 +19,8 @@ object SharedValues {
     const val SS_DISPLAY_TAGS_IN_CARD = "DISPLAY_TAGS_IN_CARD"
     const val SS_DISPLAY_JOURNEY_NUMBER = "DISPLAY_JOURNEY_NUMBER"
     const val SS_DISPLAY_DIVERGENT_STOP = "DISPLAY_DIVERGENT_STOP"
-    const val SS_EMOJI_SHOWCASE = "DISPLAY_EMOJI_SHOWCASE"
-    const val SS_EDIT_PROFILE_SHOWCASE = "EDIT_PROFILE_SHOWCASE"
-    const val SS_CO_TRAVELLER_SHOWCASE = "CO_TRAVELLER_SHOWCASE"
     const val SS_USE_SYSTEM_FONT = "USE_SYSTEM_FONT"
+    const val SS_WIDGET_STATIONS_STATE = "WIDGET_STATIONS_STATE"
 
     var TRAVELYNX_TOKEN = ""
 
@@ -54,7 +52,7 @@ object SharedValues {
     const val URL_TOKEN_EXCHANGE = "https://traewelling.de/oauth/token"
 
     val AUTH_SERVICE_CONFIG = AuthorizationServiceConfiguration(
-        Uri.parse(URL_AUTHORIZATION),
-        Uri.parse(URL_TOKEN_EXCHANGE)
+        URL_AUTHORIZATION.toUri(),
+        URL_TOKEN_EXCHANGE.toUri()
     )
 }

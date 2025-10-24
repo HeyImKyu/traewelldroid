@@ -183,6 +183,8 @@
     <string name="tag_staff_role_example">Tf, Zf, Gastro, …</string>
     <string name="tag_passenger_rights_title">Fahrgastrechte</string>
     <string name="tag_passenger_rights_example">z.B. Beantragt, Ausgezahlt, Fall-ID, …</string>
+    <string name="tag_price_title">Preis</string>
+    <string name="tag_journey_number_title">Fahrtnummer</string>
     <string name="add_tag">Tag hinzufügen</string>
     <string name="edit_tag">Tag bearbeiten</string>
     <string name="select_tag_type">Tagart auswählen</string>
@@ -315,7 +317,7 @@
     <string name="wrapped_in_a_total">mit insgesamt</string>
     <string name="wrapped_times_travels">Die Zeit vergeht so schnell! ⏰</string>
     <string name="wrapped_longest_travels">Die meiste Zeit warst du unterwegs mit</string>
-    <string name="wrapped_like_trains">Gib\'s zu, du magst deren Züge!</string>
+    <string name="wrapped_like_trains">Gib\'s zu, du magst deren Züge, oder?</string>
     <string name="wrapped_favorite_lines">Deine Lieblingslinien! 🤗</string>
     <string name="wrapped_line_distance">Die Linie, mit der du die meiste Strecke zurückgelegt hast, war</string>
     <string name="operated_by">betrieben von</string>
@@ -343,4 +345,15 @@
     <string name="notice">Hinweis</string>
     <string name="trwl_api_error">Aktuell gibt es vermehrt Probleme bei Träwelling (traewelling.de), daher ist die Funktionalität eingeschränkt. Bitte prüfe die Träwelling-Webseite.</string>
     <string name="no_map_for_check_in">Für diesen Check-In steht moment leider keine Kartenansicht zur Verfügung.</string>
+    <string name="now">Jetzt</string>
+    <string name="push_registration_no_endpoint_error">Konnte nicht für Push-Benachrichtigungen registrieren</string>
+    <string name="time_zone">Zeitzone</string>
+    <string name="bio">Bio</string>
+    <string name="email">E-Mail-Adresse</string>
+    <string name="pride">Träwelldroid wird für dich mit Pride entwickelt.</string>
+    <string name="contributors_thanks">Vielen Dank an alle Beitragenden, die ihre Freizeit in dieses und andere zugehörige Open Source-Projekte investieren.</string>
+    <plurals name="removed_departures">
+        <item quantity="one">Eine Abfahrt wurde aufgrund von Lizenzproblemen entfernt.</item>
+        <item quantity="other" formatted="true">%1$d Abfahrten wurden aufgrund von Lizenzproblemen entfernt.</item>
+    </plurals>
 </resources>

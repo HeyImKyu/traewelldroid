@@ -136,6 +136,7 @@ fun LineIcon(
             && displayJourneyNumberSetting
             && !displayedName.contains(journeyNumber ?: "")
             && journeyNumber != null && journeyNumber != ""
+            && journeyNumber.length <= 8
         ) {
             Text(
                 text = "($journeyNumber)",

@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.browser.customtabs.CustomTabsIntent
 import de.hbch.traewelling.BuildConfig
 import de.hbch.traewelling.theme.MainTheme
+import androidx.core.net.toUri
 
 class InfoActivity : ComponentActivity() {
 
@@ -28,7 +29,7 @@ class InfoActivity : ComponentActivity() {
 
     private fun showProjectRepo() {
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse(BuildConfig.REPO_URL)
+        intent.data = BuildConfig.REPO_URL.toUri()
         startActivity(intent)
     }
 
@@ -37,6 +38,6 @@ class InfoActivity : ComponentActivity() {
             .setShowTitle(false)
             .build()
 
-        intent.launchUrl(this, Uri.parse(BuildConfig.PRIVACY_URL))
+        intent.launchUrl(this, BuildConfig.PRIVACY_URL.toUri())
     }
 }

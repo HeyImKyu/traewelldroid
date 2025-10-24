@@ -149,4 +149,6 @@
     <string name="map_view">Kartäasicht</string>
     <string name="configure_map">Da chasch d Kartäasicht konfiguriere.</string>
     <string name="standard_layer">Standard</string>
+    <string name="product_type_plane">Flugzüg</string>
+    <string name="product_type_taxi">Taxi</string>
 </resources>

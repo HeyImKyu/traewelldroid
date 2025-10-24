@@ -33,7 +33,7 @@ class DashboardFragmentViewModel : ViewModel() {
                     if (response.isSuccessful) {
                         val statusPage = response.body()
                         if (statusPage != null) {
-                            checkIns.addAll(statusPage.data)
+                            checkIns.addAll(statusPage.data.filter { status -> checkIns.find { status.id == it.id } == null })
                         }
                         return
                     }

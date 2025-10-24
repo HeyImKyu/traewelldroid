@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,10 +21,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import de.hbch.traewelling.BuildConfig
 import de.hbch.traewelling.R
 import de.hbch.traewelling.theme.MainTheme
@@ -50,7 +49,7 @@ fun InfoScreen(
                 navigationIcon = {
                     IconButton(onClick = backPressed) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            painter = painterResource(R.drawable.ic_arrow_left),
                             contentDescription = null
                         )
                     }
@@ -59,6 +58,7 @@ fun InfoScreen(
         },
         content = { innerPadding ->
             var licensesVisible by remember { mutableStateOf(false) }
+            val libraries by produceLibraries(R.raw.aboutlibraries)
 
             if (licensesVisible) {
                 ContentDialog(onDismissRequest = { licensesVisible = false }) {
@@ -68,11 +68,12 @@ fun InfoScreen(
                     ) {
                         IconButton(onClick = { licensesVisible = false }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                painter = painterResource(R.drawable.ic_arrow_left),
                                 contentDescription = null
                             )
                         }
                         LibrariesContainer(
+                            libraries = libraries,
                             modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(16.dp))
                         )
                     }

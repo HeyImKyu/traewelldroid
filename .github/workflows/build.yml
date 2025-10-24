@@ -6,24 +6,34 @@ on:
       - main
       - dev
   push:
+    branches:
+      - dev
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   assemble:
+    if: |
+      (github.event_name == 'pull_request' &&
+      (github.base_ref == 'main' || github.base_ref == 'dev')) ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'corretto'
-          java-version: '21'
+          distribution: "corretto"
+          java-version: "21"
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Assemble foss flavor
+
+      - name: Assemble Foss Debug
         run: ./gradlew assembleFossDebug
-      - name: Assemble Google Play flavor
+
+      - name: Assemble Play Debug
         run: ./gradlew assemblePlayDebug
 
       - name: ls
@@ -41,3 +51,65 @@ jobs:
         with: 
           name: assembly
           path: assembly.zip
+      - name: Decode Keystore
+        run: |
+          echo $SIGNING_KEYSTORE_BASE64 | base64 -di > ${{ runner.temp }}/keystore.jks
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+
+      - name: Configure keystore.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_STORE_PASSWORD }}" >> keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}" >> keystore.properties
+          echo "keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}" >> keystore.properties
+          echo "storeFile=${{ runner.temp }}/keystore.jks" >> keystore.properties
+
+      - name: Clean before Foss build
+        run: ./gradlew clean
+
+      - name: Build Foss Release APK
+        run: ./gradlew assembleFossRelease
+
+      - name: Copy Foss APK artifact
+        run: cp app/build/outputs/apk/foss/release/app-foss-release.apk ${{ runner.temp }}
+
+      - name: Clean before Play build
+        run: ./gradlew clean
+
+      - name: Build Play Release APK
+        run: ./gradlew assemblePlayRelease
+
+      - name: Copy Play APK artifact
+        run: cp app/build/outputs/apk/play/release/app-play-release.apk ${{ runner.temp }}
+
+      - name: Build Play Release AAB
+        run: ./gradlew bundlePlayRelease
+
+      - name: Upload Foss Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: foss-release-apk
+          path: ${{ runner.temp }}/app-foss-release.apk
+
+      - name: Upload Play Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: play-release-apk
+          path: ${{ runner.temp }}/app-play-release.apk
+
+      - name: Upload GitHub Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ runner.temp }}/app-foss-release.apk
+            ${{ runner.temp }}/app-play-release.apk
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          generate_release_notes: true
+          make_latest: true
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          packageName: de.hbch.traewelling
+          releaseFiles: app/build/outputs/bundle/playRelease/app-play-release.aab

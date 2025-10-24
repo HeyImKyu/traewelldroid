@@ -10,7 +10,13 @@ data class HafasTrainTrip(
     @SerializedName("origin") val origin: Station,
     @SerializedName("destination") val destination: Station,
     @SerializedName("stopovers") var stopovers: List<HafasTrainTripStation>,
-    @SerializedName("number") val lineId: String
+    @SerializedName("number") val lineId: String,
+    val dataSource: DataSource?
 ) {
     val safeProductType get() = category ?: ProductType.UNKNOWN
 }
+
+data class DataSource(
+    val id: String,
+    val attribution: String
+)

@@ -39,20 +39,12 @@
             android:name=".ui.wrapped.WrappedActivity"
             android:exported="false" />
 
-        <meta-data
-            android:name="io.sentry.dsn"
-            android:value="${SENTRY_DSN}" />
-        <meta-data
-            android:name="io.sentry.environment"
-            android:value="${SENTRY_ENV}" />
-
         <activity android:name=".ui.main.MainActivity" android:exported="true" android:windowSoftInputMode="stateVisible|adjustResize">
             <!-- traewelling.de  -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:scheme="traewelldroid"/>
@@ -123,6 +115,17 @@
                 <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
                 <action android:name="org.unifiedpush.android.connector.REGISTRATION_FAILED" />
             </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".widget.TraewelldroidWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
         </receiver>
     </application>
 </manifest>

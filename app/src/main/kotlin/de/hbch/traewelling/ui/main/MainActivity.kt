@@ -1,27 +1,27 @@
 package de.hbch.traewelling.ui.main
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
@@ -56,6 +56,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -87,6 +88,7 @@ import de.hbch.traewelling.shared.SettingsViewModel
 import de.hbch.traewelling.shared.SharedValues
 import de.hbch.traewelling.theme.LocalColorScheme
 import de.hbch.traewelling.theme.MainTheme
+import de.hbch.traewelling.ui.composables.ContentDialog
 import de.hbch.traewelling.ui.include.status.ActiveStatusBar
 import de.hbch.traewelling.ui.notifications.NotificationsViewModel
 import de.hbch.traewelling.util.popBackStackAndNavigate
@@ -98,6 +100,8 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import de.hbch.traewelling.util.readOrDownloadCustomEmoji
+import de.hbch.traewelling.util.refreshJwt
+import de.hbch.traewelling.widget.updateWidgetState
 import java.net.URL
 import java.time.Duration
 import java.time.LocalDateTime
@@ -109,14 +113,12 @@ class MainActivity : ComponentActivity()
     private val checkInViewModel: CheckInViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
-    private var newIntentReceived: ((Intent?) -> Unit)? = null
     private lateinit var secureStorage: SecureStorage
     lateinit var emojiPackItemAdapter: EmojiPackItemAdapter
 
     override fun onStart() {
         super.onStart()
         EventBus.getDefault().register(this)
-        initUnleash()
     }
 
     override fun onStop() {
@@ -126,11 +128,17 @@ class MainActivity : ComponentActivity()
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnauthorizedEvent(@Suppress("UNUSED_PARAMETER") unauthorizedEvent: UnauthorizedEvent) {
-        loggedInUserViewModel.resetApplication(this)
+    fun onUnauthorizedEvent(unauthorizedEvent: UnauthorizedEvent) {
+        refreshJwt(
+            onTokenReceived = { },
+            onError = {
+                loggedInUserViewModel.resetApplication(this)
+            }
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        initUnleash()
         secureStorage = SecureStorage(this)
         emojiPackItemAdapter = EmojiPackItemAdapter.get(this)
         TraewellingApi.jwt = secureStorage.getObject(SharedValues.SS_JWT, String::class.java)!!
@@ -138,31 +146,25 @@ class MainActivity : ComponentActivity()
 
         settingsViewModel.loadSettings(this)
 
-        enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
-        )
+        enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             val navController = rememberNavController()
 
-            newIntentReceived = {
-                navController.handleDeepLink(it)
-            }
+            loggedInUserViewModel.getLoggedInUser()
+            loggedInUserViewModel.getLastVisitedStations {  }
 
-            TraewelldroidApp(
-                navController = navController,
-                loggedInUserViewModel = loggedInUserViewModel,
-                eventViewModel = eventViewModel,
-                checkInViewModel = checkInViewModel
-            )
+            MainTheme {
+                TraewelldroidApp(
+                    navController = navController,
+                    loggedInUserViewModel = loggedInUserViewModel,
+                    eventViewModel = eventViewModel,
+                    checkInViewModel = checkInViewModel
+                )
+            }
         }
         super.onCreate(savedInstanceState)
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        newIntentReceived?.invoke(intent)
     }
 
     private fun initUnleash() {
@@ -193,61 +195,62 @@ fun TraewelldroidApp(
     eventViewModel: EventViewModel,
     checkInViewModel: CheckInViewModel
 ) {
-    MainTheme {
-        val context = LocalContext.current
-        val currentBackStack by navController.currentBackStackEntryAsState()
-        val currentDestination = currentBackStack?.destination
-        val currentScreen = SCREENS.find { currentDestination?.route?.contains(it::class.qualifiedName ?: "unknown") == true } ?: Dashboard
-        val loggedInUser by loggedInUserViewModel.loggedInUser.observeAsState()
-        val lastVisitedStations by loggedInUserViewModel.lastVisitedStations.observeAsState()
-        val homelandStation by loggedInUserViewModel.home.observeAsState()
-        val currentStatus by loggedInUserViewModel.currentStatus.observeAsState()
+    val context = LocalContext.current
+    val currentBackStack by navController.currentBackStackEntryAsState()
+    val currentDestination = currentBackStack?.destination
+    val currentScreen = SCREENS.find { currentDestination?.route?.contains(it::class.qualifiedName ?: "unknown") == true } ?: Dashboard
+    val loggedInUser by loggedInUserViewModel.loggedInUser.observeAsState()
+    val lastVisitedStations by loggedInUserViewModel.lastVisitedStations.observeAsState()
+    val homelandStation by loggedInUserViewModel.home.observeAsState()
+    val currentStatus by loggedInUserViewModel.currentStatus.observeAsState()
 
-        LaunchedEffect(lastVisitedStations, homelandStation) {
-            context.publishStationShortcuts(homelandStation, lastVisitedStations)
+    LaunchedEffect(lastVisitedStations, homelandStation) {
+        context.publishStationShortcuts(homelandStation, lastVisitedStations)
+        context.updateWidgetState(homelandStation, lastVisitedStations)
+    }
+
+    LaunchedEffect(loggedInUser) {
+        val user = loggedInUser
+        if (user?.mastodonUrl != null) {
+            val host = URL(user.mastodonUrl).host
+            MastodonEmojis.getInstance(context).emojis[host] = context.readOrDownloadCustomEmoji(host)
         }
+    }
 
-        LaunchedEffect(loggedInUser) {
-            val user = loggedInUser
-            if (user?.mastodonUrl != null) {
-                val host = URL(user.mastodonUrl).host
-                MastodonEmojis.getInstance(context).emojis[host] = context.readOrDownloadCustomEmoji(host)
-            }
+    val appBarState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(appBarState)
+
+    val menuItems = remember { mutableStateListOf<ComposeMenuItem>() }
+    val menuItemsChanged: (List<ComposeMenuItem>) -> Unit = {
+        menuItems.clear()
+        menuItems.addAll(it)
+    }
+
+    var fabVisible by remember { mutableStateOf(false) }
+    var fabIcon by remember { mutableStateOf<Int?>(null) }
+    var fabLabel by remember { mutableStateOf<Int?>(null) }
+    var fabListener by remember { mutableStateOf({ }) }
+    var noticeDialogVisible by remember { mutableStateOf(false) }
+    var unreadNotificationCount by remember { mutableIntStateOf(0) }
+    val notificationsViewModel: NotificationsViewModel = viewModel()
+    val onNotificationCountChanged: () -> Unit = {
+        notificationsViewModel.getUnreadNotificationCount {
+            unreadNotificationCount = it
         }
+    }
+    var lastNotificationRequest by remember { mutableStateOf<LocalDateTime>(LocalDateTime.MIN) }
 
-        val appBarState = rememberTopAppBarState()
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(appBarState)
+    val snackbarHostState = remember { SnackbarHostState() }
 
-        val menuItems = remember { mutableStateListOf<ComposeMenuItem>() }
-        val menuItemsChanged: (List<ComposeMenuItem>) -> Unit = {
-            menuItems.clear()
-            menuItems.addAll(it)
+    navController.addOnDestinationChangedListener { _, _, _ ->
+        val lastRequest = lastNotificationRequest
+        val duration = Duration.between(lastRequest, LocalDateTime.now())
+        if (duration.toMinutes() > 0) {
+            onNotificationCountChanged()
+            lastNotificationRequest = LocalDateTime.now()
         }
-
-        var fabVisible by remember { mutableStateOf(false) }
-        var fabIcon by remember { mutableStateOf<Int?>(null) }
-        var fabLabel by remember { mutableStateOf<Int?>(null) }
-        var fabListener by remember { mutableStateOf({ }) }
-        var unreadNotificationCount by remember { mutableIntStateOf(0) }
-        val notificationsViewModel: NotificationsViewModel = viewModel()
-        val onNotificationCountChanged: () -> Unit = {
-            notificationsViewModel.getUnreadNotificationCount {
-                unreadNotificationCount = it
-            }
-        }
-        var lastNotificationRequest by remember { mutableStateOf<LocalDateTime>(LocalDateTime.MIN) }
-
-        val snackbarHostState = remember { SnackbarHostState() }
-
-        navController.addOnDestinationChangedListener { _, _, _ ->
-            val lastRequest = lastNotificationRequest
-            val duration = Duration.between(lastRequest, LocalDateTime.now())
-            if (duration.toMinutes() > 0) {
-                onNotificationCountChanged()
-                lastNotificationRequest = LocalDateTime.now()
-            }
-        }
-
+    }
+    Box {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
@@ -275,7 +278,7 @@ fun TraewelldroidApp(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    painter = painterResource(R.drawable.ic_arrow_left),
                                     contentDescription = null
                                 )
                             }
@@ -324,6 +327,20 @@ fun TraewelldroidApp(
                                     }
                                 }
                             }
+                        } else if (currentDestination?.route == Dashboard::class.qualifiedName) {
+                            Image(
+                                painter = painterResource(id = R.drawable.intersex_inclusive_pride_flag),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        noticeDialogVisible = true
+                                    }
+                                    .height(24.dp)
+                                    .padding(end = 16.dp)
+                            )
                         }
                     },
                 )
@@ -337,7 +354,12 @@ fun TraewelldroidApp(
                     Column {
                         AnimatedVisibility(visible = currentStatus != null) {
                             BottomAppBar(
-                                windowInsets = WindowInsets(bottom = 0.dp, left = 0.dp, right = 0.dp, top = 0.dp)
+                                windowInsets = WindowInsets(
+                                    bottom = 0.dp,
+                                    left = 0.dp,
+                                    right = 0.dp,
+                                    top = 0.dp
+                                )
                             ) {
                                 ActiveStatusBar(
                                     status = currentStatus,
@@ -395,7 +417,9 @@ fun TraewelldroidApp(
                                             overflow = TextOverflow.Ellipsis
                                         )
                                     },
-                                    selected = currentDestination?.route?.contains(destination::class.qualifiedName ?: "unknown") == true,
+                                    selected = currentDestination?.route?.contains(
+                                        destination::class.qualifiedName ?: "unknown"
+                                    ) == true,
                                     onClick = {
                                         navController.popBackStackAndNavigate(destination)
                                         appBarState.contentOffset = 0f
@@ -454,6 +478,35 @@ fun TraewelldroidApp(
                 },
                 onNotificationCountChange = onNotificationCountChanged
             )
+
+            if (noticeDialogVisible) {
+                ContentDialog(
+                    onDismissRequest = {
+                        noticeDialogVisible = false
+                    }
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.intersex_inclusive_pride_flag),
+                            contentDescription = null
+                        )
+
+                        Text(
+                            text = "${stringResource(R.string.pride)} \uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08 \uD83C\uDFF3\uFE0F\u200D⚧\uFE0F",
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            text = "${stringResource(R.string.contributors_thanks)} ❤",
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

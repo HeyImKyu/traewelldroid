@@ -11,7 +11,7 @@ class LogInterceptor : Interceptor {
         val copy = request.newBuilder().build()
         val response = chain.proceed(request)
 
-        val ignoredCodes = listOf(401, 409, 404)
+        val ignoredCodes = listOf(401, 409, 404, 400, 429, 503)
         val path = request.url.encodedPath
 
         if (!response.isSuccessful && !ignoredCodes.contains(response.code)) {

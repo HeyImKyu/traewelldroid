@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -26,7 +26,6 @@ import de.hbch.traewelling.shared.MastodonEmojis
 import de.hbch.traewelling.theme.LocalColorScheme
 import de.hbch.traewelling.util.extractUsernames
 import de.hbch.traewelling.util.extractCustomEmojis
-import kotlinx.coroutines.launch
 import java.net.URL
 import java.time.ZonedDateTime
 
@@ -61,70 +60,61 @@ data class Status(
         val context = LocalContext.current
         val mentionColor = LocalColorScheme.current.primary
         val statusBody = getStatusText()
+        val inlineTextContent = mutableMapOf<String, InlineTextContent>()
         val mastodonEmoji = remember { mutableStateListOf<CustomEmoji>() }
-        val coroutineScope = rememberCoroutineScope()
-
         val usernames = statusBody.extractUsernames()
         val usernameStyle = SpanStyle(fontWeight = FontWeight.ExtraBold, color = mentionColor)
         val extractedEmojis = statusBody.extractCustomEmojis()
         val matches = listOf(usernames, extractedEmojis).flatten().sortedBy { it.range.first }
         val builder = AnnotatedString.Builder()
 
-        val inlineTextContent = mutableMapOf<String, InlineTextContent>()
+        val instance = user.mastodonUrl?.let { URL(it).host }
+
+        LaunchedEffect(instance) {
+            if (instance != null && mastodonEmoji.isEmpty()) {
+                val mastodonEmojis = MastodonEmojis.getInstance(context)
+                val instanceEmoji = mastodonEmojis.emojis[instance]
+                if (instanceEmoji.isNullOrEmpty()) {
+                    mastodonEmoji.addAll(MastodonEmojis.getEmojis(instance, context))
+                } else {
+                    mastodonEmoji.addAll(instanceEmoji)
+                }
+            }
+        }
 
         var lastRangeEnd = 0
         matches.forEach { match ->
             builder.append(statusBody.substring(lastRangeEnd, match.range.first))
-
             if (usernames.contains(match)) {
+                // User mentions
                 val username = match.groupValues.getOrElse(1) { "" }
                 builder.append(statusBody.substring(match.range))
                 if (mentions.any { it.user.username == username }) {
                     builder.addStyle(usernameStyle, match.range.first, match.range.last + 1)
-                    builder.addStringAnnotation(
-                        "userMention",
-                        username,
-                        match.range.first,
-                        match.range.last + 1
-                    )
+                    builder.addStringAnnotation("userMention", username, match.range.first, match.range.last + 1)
                 }
             } else if (extractedEmojis.contains(match)) {
-                if (user.mastodonUrl != null) {
-                    val mastodonEmojis = MastodonEmojis.getInstance(context)
-                    val instance = URL(user.mastodonUrl).host
-                    val instanceEmoji = mastodonEmojis.emojis[instance]
-
-                    if (instanceEmoji.isNullOrEmpty()) {
-                        coroutineScope.launch {
-                            mastodonEmoji.addAll(MastodonEmojis.getEmojis(instance, context))
-                        }
-                    } else {
-                        mastodonEmoji.addAll(instanceEmoji)
+                // Custom Emoji
+                val emoji = match.groupValues.getOrElse(1) { "" }
+                val customEmoji = mastodonEmoji.firstOrNull { it.shortcode == emoji }
+                if (customEmoji != null) {
+                    builder.appendInlineContent(customEmoji.shortcode, ":${customEmoji.shortcode}:")
+                    inlineTextContent[customEmoji.shortcode] = InlineTextContent(
+                        Placeholder(24.sp, 24.sp, PlaceholderVerticalAlign.TextCenter)
+                    ) {
+                        AsyncImage(
+                            model = customEmoji.url,
+                            contentDescription = customEmoji.shortcode,
+                            modifier = Modifier.fillMaxSize(),
+                            placeholder = painterResource(id = R.drawable.ic_hourglass)
+                        )
                     }
-
-                    val emoji = match.groupValues.getOrElse(1) { "" }
-                    val customEmoji = mastodonEmoji.firstOrNull { it.shortcode == emoji }
-                    if (customEmoji != null) {
-                        builder.appendInlineContent(customEmoji.shortcode, ":${customEmoji.shortcode}:")
-                        inlineTextContent[customEmoji.shortcode] = InlineTextContent(
-                            Placeholder(24.sp, 24.sp, PlaceholderVerticalAlign.TextCenter)
-                        ) {
-                            AsyncImage(
-                                model = customEmoji.url,
-                                contentDescription = customEmoji.shortcode,
-                                modifier = Modifier.fillMaxSize(),
-                                placeholder = painterResource(id = R.drawable.ic_hourglass)
-                            )
-                        }
-                    } else {
-                        builder.append(":$emoji:")
-                    }
+                } else {
+                    builder.append(":$emoji:")
                 }
             }
-
             lastRangeEnd = match.range.last + 1
         }
-
         builder.append(statusBody.substring(lastRangeEnd, statusBody.length))
         return Pair(builder.toAnnotatedString(), inlineTextContent)
     }
@@ -157,6 +147,12 @@ enum class StatusVisibility() {
     ONLY_AUTHENTICATED {
         override val icon = R.drawable.ic_authorized
         override val title = R.string.visibility_only_authenticated
+        override val isMastodonVisibility = false
+    },
+    @SerializedName("5")
+    TRUSTED {
+        override val icon = R.drawable.ic_trusted
+        override val title = R.string.trusted
         override val isMastodonVisibility = false
     };
 

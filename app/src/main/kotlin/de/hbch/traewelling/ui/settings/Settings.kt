@@ -274,12 +274,12 @@ private fun TraewellingProviderSettings(
                     stringId = R.string.renew_login,
                     drawableId = R.drawable.ic_refresh,
                     onClick = {
-                        context.refreshJwt {
+                        context.refreshJwt(onTokenReceived = {
                             jwt = it
                             coroutineScope.launch {
                                 snackbarHostState.showSnackbar(context.getString(R.string.renew_login_success))
                             }
-                        }
+                        })
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -395,7 +395,7 @@ private fun HashtagSettings(
 ) {
     val context = LocalContext.current
     var hashtagText by remember { mutableStateOf("") }
-    @Suppress("CanBeVal") var secureStorage: SecureStorage?
+    var secureStorage: SecureStorage?
     var saveHashtagAction: () -> Unit = { }
     val coroutineScope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current

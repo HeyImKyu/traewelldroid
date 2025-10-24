@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="ok">Ok</string>
     <string name="abort">Avbryt</string>
     <string name="input_username">Brukernavn</string>
@@ -26,7 +26,7 @@
     <string name="change_destination">Rediger destinasjonen</string>
     <string name="status_message">Status melding</string>
     <string name="departures_at">Avganger på %1$s</string>
-    <string name="title_select_date">Velg avgangsdato</string>
+    <string name="title_select_date">Velg avgangsdatoen</string>
     <string name="title_select_time">Velg avgangstid</string>
     <string name="title_search_connection">Søk reise</string>
     <string name="previous">Tidligere</string>
@@ -77,7 +77,7 @@
     <string name="maxspeed_layer">Toppfart</string>
     <string name="no_results_found">Det fantes ingen resultater.</string>
     <string name="tag_coach_title">Vogn</string>
-    <string name="check_in_failure">Det var et feil med å sjekke deg inn.</string>
+    <string name="check_in_failure">Det oppsto en feil under insjekkingen din.</string>
     <string name="reset_selection">Nullstille utvalg</string>
     <string name="point_reason_good_enough">Fordi du sjekket inn litt for sent få du ikke alle poenger. Prøv å sjekke inn innen kort tid før avgangen eller mens du reiser.</string>
     <string name="status_delete_failure">Det var et feil med å slette innsjekkingen.</string>
@@ -97,7 +97,7 @@
     <string name="tag_locomotive_class_example">f.eks. Type 69, Type 93, …</string>
     <string name="tag_wagon_class_title">Vogntype</string>
     <string name="tag_wagon_class_example">f.eks. BDcm, WLAB, …</string>
-    <string name="enable_push_notifications">Slå på Pushmeldinger</string>
+    <string name="enable_push_notifications">Akriver Pushmeldinger</string>
     <string name="tag_vehicle_number_example">f.eks. BFR 73.803, 92.15/91, …</string>
     <string name="tag_staff_role_title">Rolle på jobben</string>
     <string name="tag_staff_role_example">Lokfører, konduktør, …</string>
@@ -270,4 +270,28 @@
     <string name="wrapped_your_top_destinations">Disse stedene har du besøkt oftest…</string>
     <string name="wrapped_favorite_lines">Dine favorittlinjer! 🤗</string>
     <string name="wrapped_thank_you_description">… for å bruke Träwelldroid! God fornøyelse på dine fremtidige reiser og la oss starte et flott år %1$d sammen! 🚀</string>
+    <string name="edit_tag">Rediger tagg</string>
+    <string name="data_loading" tools:ignore="TypographyEllipsis">Henter data…</string>
+    <string name="title_share">Del</string>
+    <string name="add_tag">Tilsett tagg</string>
+    <string name="share_as_image">Del som bilde</string>
+    <string name="notice">Henvisning</string>
+    <string name="trwl_api_error">Det finnes økt tjenesteproblemer hos Träwelling (traewelling.de). Vennligst sjekk Träwelling-nettstedet.</string>
+    <string name="all_tags_already_added">Alle tagger har allerede blitt tilsettet. Du kan redigere en tagg hvis du velger det ut fra oversiktet.</string>
+    <string name="now">Nå</string>
+    <string name="no_map_for_check_in">Det er ikke mulig å vise kortsynet til denne innsjekkingen akkurat nå.</string>
+    <string name="time_zone">Tidssone</string>
+    <string name="email">E-post</string>
+    <string name="tag_journey_number_title">Turnummer</string>
+    <string name="tag_price_title">Pris av billetten</string>&gt;
+    <string name="select_tag_type">Velg taggtype</string>
+    <string name="share_tags_on_image">Vis tagger på bildet</string>
+    <string name="use_system_font">Bruk systemskrift (trenger å starte på nytt)</string>
+    <string name="timetable_api_error">Tjenesten som tilfører ruteplandata kunne ikke nåes eller svarer ikke. Vennligst prøv igjen senere.</string>
+    <string name="error_missing_location_permission">For å bruke denne funksjonen må du aktivere posisjonstillatelse i enhetsinnstillingene dine.</string>
+    <string name="locate">Lokalisere</string>
+    <string name="error_logout">Utlogging mislyktes!</string>
+    <string name="title_user">Profil</string>
+    <string name="error_credentials">Sjekk legitimasjonen din</string>
+    <string name="edit_profile">Rediger profil</string>
 </resources>

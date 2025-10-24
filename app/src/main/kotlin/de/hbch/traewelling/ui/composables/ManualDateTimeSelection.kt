@@ -147,7 +147,19 @@ fun DateTimeSelection(
                 )
             },
             trailingIcon = {
-                if (dateTime != null) {
+                if (dateTime == null) {
+                    TextButton(
+                        onClick = {
+                            val now = ZonedDateTime.now()
+                            dateTime = now
+                            dateSelected(now)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.now)
+                        )
+                    }
+                } else {
                     IconButton(onClick = {
                         dateTime = null
                         dateSelected(null)

@@ -41,7 +41,7 @@ enum class AllowedPersonsToCheckIn {
     },
     @SerializedName("list")
     TRUSTED_USERS {
-        override val icon = R.drawable.ic_authorized
+        override val icon = R.drawable.ic_trusted
         override val title = R.string.trusted
     };
 

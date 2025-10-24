@@ -340,7 +340,7 @@ private fun DailyStatisticsPreview() {
         42,
         FeatureCollection(null, null)
     )
-    val loggedInUserViewModel = LoggedInUserViewModel()
+    val loggedInUserViewModel = viewModel<LoggedInUserViewModel>()
     MainTheme {
         DailyStatisticsView(
             statistics = statistics,

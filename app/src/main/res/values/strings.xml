@@ -209,6 +209,10 @@
     <string name="tag_staff_role_example">Driver, conductor, …</string>
     <string name="tag_passenger_rights_title">Passenger rights claim</string>
     <string name="tag_passenger_rights_example">i.e. Requested, paid out, ID of claim, …</string>
+    <string name="tag_price_title">Price</string>&gt;
+    <string name="tag_price_example" translatable="false">6,99, 7 €, …</string>
+    <string name="tag_journey_number_title">Journey number</string>
+    <string name="tag_journey_number_example" translatable="false">RB 12600, ICE 900, …</string>
     <string name="add_tag">Add tag</string>
     <string name="edit_tag">Edit tag</string>
     <string name="select_tag_type">Select tag type</string>
@@ -371,4 +375,15 @@
     <string name="trwl_api_error">Currently there are ongoing service issues with Träwelling (traewelling.de). Please check the Träwelling website.</string>
     <string name="traewelling_de" translatable="false">traewelling.de</string>
     <string name="no_map_for_check_in">Currently there is no map view available for this check-in.</string>
+    <string name="now">Now</string>
+    <string name="push_registration_no_endpoint_error">Failed to register for push notifications.</string>
+    <string name="bio">Bio</string>
+    <string name="email">E-Mail</string>
+    <string name="time_zone">Time Zone</string>
+    <string name="pride">Träwelldroid is developed and brought to you with pride.</string>
+    <string name="contributors_thanks">Thanks to all contributors investing their free-time into this and associated open source projects.</string>
+    <plurals name="removed_departures">
+        <item quantity="one">1 departure was removed due to licensing issues.</item>
+        <item quantity="other" formatted="true">%1$d departures were removed due to licensing issues.</item>
+    </plurals>
 </resources>

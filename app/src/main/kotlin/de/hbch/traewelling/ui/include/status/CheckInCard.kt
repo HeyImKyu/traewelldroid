@@ -16,38 +16,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -81,11 +56,7 @@ import de.hbch.traewelling.theme.HeartRed
 import de.hbch.traewelling.theme.LocalColorScheme
 import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.StarYellow
-import de.hbch.traewelling.ui.composables.CustomClickableText
-import de.hbch.traewelling.ui.composables.ContentDialog
-import de.hbch.traewelling.ui.composables.LineIcon
-import de.hbch.traewelling.ui.composables.ProfilePicture
-import de.hbch.traewelling.ui.composables.SharePicDialog
+import de.hbch.traewelling.ui.composables.*
 import de.hbch.traewelling.ui.report.Report
 import de.hbch.traewelling.ui.tag.StatusTags
 import de.hbch.traewelling.ui.user.getDurationString
@@ -94,7 +65,7 @@ import de.hbch.traewelling.util.getLocalTimeString
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.ZonedDateTime
-import java.util.Locale
+import java.util.*
 
 @Composable
 fun SegmentedLinearProgressIndicator(progress: Float, height: Dp, margin: Dp) {
@@ -276,7 +247,7 @@ fun CheckInCard(
                         duration = status.journey.duration,
                         statusBusiness = status.business,
                         message = status.getStatusBody(),
-                        journeyNumber = status.journey.journeyNumber,
+                        journeyNumber = status.journey.manualJourneyNumber ?: status.journey.journeyNumber,
                         operatorCode = status.journey.operator?.id,
                         lineId = status.journey.lineId,
                         userSelected = userSelected,
@@ -513,6 +484,7 @@ private fun CheckInCardFooter(
     var likedState by remember { mutableStateOf(status.liked ?: false) }
     var likeCountState by remember { mutableIntStateOf(status.likes ?: 0) }
     var reportFormVisible by remember { mutableStateOf(false) }
+    var deleteDialogVisible by remember { mutableStateOf(false) }
     var shareVisible by remember { mutableStateOf(false) }
 
     if (reportFormVisible) {
@@ -526,6 +498,47 @@ private fun CheckInCardFooter(
                 modifier = Modifier.padding(16.dp)
             )
         }
+    }
+
+    if (deleteDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { deleteDialogVisible = false },
+            confirmButton = {
+                ButtonWithIconAndText(
+                    stringId = R.string.ok,
+                    drawableId = R.drawable.ic_delete,
+                    onClick = {
+                        handleDeleteClicked()
+                        deleteDialogVisible = false
+                    }
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { deleteDialogVisible = false }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.abort)
+                    )
+                }
+            },
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = null
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(id = R.string.delete_status)
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.delete)
+                )
+            }
+        )
     }
 
     if (shareVisible) {
@@ -706,7 +719,7 @@ private fun CheckInCardFooter(
                             },
                             onClick = {
                                 menuExpanded = false
-                                handleDeleteClicked()
+                                deleteDialogVisible = true
                             }
                         )
                     } else {

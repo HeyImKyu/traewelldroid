@@ -46,9 +46,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.canopas.lib.showcase.IntroShowcase
-import com.canopas.lib.showcase.component.ShowcaseStyle
-import com.canopas.lib.showcase.component.rememberIntroShowcaseState
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.event.Event
@@ -57,7 +54,6 @@ import de.hbch.traewelling.api.models.status.StatusBusiness
 import de.hbch.traewelling.api.models.status.StatusVisibility
 import de.hbch.traewelling.api.models.user.TrustedUser
 import de.hbch.traewelling.api.models.user.User
-import de.hbch.traewelling.logging.Logger
 import de.hbch.traewelling.shared.BottomSearchViewModel
 import de.hbch.traewelling.shared.CheckInViewModel
 import de.hbch.traewelling.shared.EventViewModel
@@ -100,14 +96,6 @@ fun CheckIn(
     val context = LocalContext.current
     val secureStorage = remember { SecureStorage(context) }
     val loggedInUser by loggedInUserViewModel.loggedInUser.observeAsState()
-    var introduceEmoji by remember { mutableStateOf(
-        !(secureStorage.getObject(SharedValues.SS_EMOJI_SHOWCASE, Boolean::class.java) ?: false) &&
-        loggedInUser?.mastodonUrl != null
-    ) }
-    var introduceCoTravels by remember {
-        mutableStateOf(!(secureStorage.getObject(SharedValues.SS_CO_TRAVELLER_SHOWCASE, Boolean::class.java) ?: false))
-    }
-    val introShowcaseState = rememberIntroShowcaseState()
 
     val mastodonEmojis = remember { MastodonEmojis.getInstance(context) }
     val instanceEmojis by remember { derivedStateOf {
@@ -190,8 +178,7 @@ fun CheckIn(
                     val events = eventViewModel.getEvents(checkInViewModel.departureTime!!)
                     activeEvents.clear()
                     activeEvents.addAll(events)
-                } catch (ex: Exception) {
-                    Logger.captureException(ex)
+                } catch (_: Exception) {
                     eventsLoaded = false
                 }
             }
@@ -264,429 +251,363 @@ fun CheckIn(
         }
     }
 
-    IntroShowcase(
-        showIntroShowCase = introduceEmoji || introduceCoTravels,
-        onShowCaseCompleted = {
-            introduceEmoji = false
-            introduceCoTravels = false
-            secureStorage.storeObject(SharedValues.SS_EMOJI_SHOWCASE, true)
-            secureStorage.storeObject(SharedValues.SS_CO_TRAVELLER_SHOWCASE, true)
-        },
-        state = introShowcaseState,
-        dismissOnClickOutside = true
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
     ) {
-        Column(
+        ElevatedCard(
             modifier = modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
         ) {
-            ElevatedCard(
-                modifier = modifier
-                    .fillMaxWidth()
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.End
             ) {
+                FromToTextRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    category = checkInViewModel.category,
+                    lineName = checkInViewModel.lineName,
+                    lineId = checkInViewModel.lineId,
+                    operatorCode = checkInViewModel.operatorCode,
+                    destination = checkInViewModel.destination
+                )
+
+                // Text field
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.End
                 ) {
-                    FromToTextRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        category = checkInViewModel.category,
-                        lineName = checkInViewModel.lineName,
-                        lineId = checkInViewModel.lineId,
-                        operatorCode = checkInViewModel.operatorCode,
-                        destination = checkInViewModel.destination
-                    )
-
-                    // Text field
-                    Column(
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        var textFieldModifier: Modifier = Modifier
-                        if (introduceEmoji) {
-                            textFieldModifier = Modifier
-                                .introShowCaseTarget(
-                                    index = 0,
-                                    style = ShowcaseStyle.Default.copy(
-                                        backgroundColor = LocalColorScheme.current.primary,
-                                        backgroundAlpha = 0.95f,
-                                        targetCircleColor = LocalColorScheme.current.onPrimary
-                                    )
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = stringResource(id = R.string.mastodon_emoji),
-                                            style = LocalFont.current.titleLarge,
-                                            color = LocalColorScheme.current.onPrimary
-                                        )
-                                        Text(
-                                            text = stringResource(id = R.string.mastodon_emoji_description),
-                                            color = LocalColorScheme.current.onPrimary
-                                        )
-                                    }
-                                }
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .widthIn(
+                                min = 72.dp,
+                                max = Dp.Unspecified
+                            ),
+                        value = statusText,
+                        onValueChange = {
+                            if (it.text.count() > 280)
+                                return@OutlinedTextField
+                            statusText = it
+                            checkInViewModel.message.postValue(it.text)
+                        },
+                        label = {
+                            Text(
+                                text = stringResource(id = R.string.status_message)
+                            )
                         }
-                        OutlinedTextField(
+                    )
+                    Text(
+                        modifier = Modifier.padding(4.dp),
+                        text = "${statusText.text.count()}/280",
+                        style = LocalFont.current.labelSmall
+                    )
+                    AnimatedVisibility(displayUserResults) {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .widthIn(
-                                    min = 72.dp,
-                                    max = Dp.Unspecified
-                                ),
-                            value = statusText,
-                            onValueChange = {
-                                if (it.text.count() > 280)
-                                    return@OutlinedTextField
-                                statusText = it
-                                checkInViewModel.message.postValue(it.text)
-                            },
-                            label = {
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (usersQuerying) {
                                 Text(
-                                    text = stringResource(id = R.string.status_message),
-                                    modifier = textFieldModifier
+                                    text = stringResource(id = R.string.data_loading)
                                 )
-                            }
-                        )
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "${statusText.text.count()}/280",
-                            style = LocalFont.current.labelSmall
-                        )
-                        AnimatedVisibility(displayUserResults) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (usersQuerying) {
+                            } else {
+                                if (userResults.isEmpty()) {
                                     Text(
-                                        text = stringResource(id = R.string.data_loading)
+                                        text = stringResource(id = R.string.no_results_found)
                                     )
                                 } else {
-                                    if (userResults.isEmpty()) {
-                                        Text(
-                                            text = stringResource(id = R.string.no_results_found)
-                                        )
-                                    } else {
-                                        userResults.forEach {
-                                            val username = "@${it.username}"
-                                            AssistChip(
-                                                onClick = {
-                                                    val firstMatch =
-                                                        statusText.text.checkAnyUsernames()
-                                                            .first {
-                                                                it.range.contains(statusText.selection.min - 1) || it.range.contains(
-                                                                    statusText.selection.max + 1
-                                                                )
-                                                            }
-                                                    statusText = statusText.copy(
-                                                        text = statusText.text.replaceRange(
-                                                            firstMatch.range.first,
-                                                            firstMatch.range.last + 1,
-                                                            "@${it.username} "
-                                                        ),
-                                                        selection = TextRange(firstMatch.range.first + it.username.length + 2)
-                                                    )
-                                                },
-                                                label = {
-                                                    Text(
-                                                        text = username
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    ProfilePicture(
-                                                        user = it,
-                                                        modifier = Modifier.size(24.dp)
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        AnimatedVisibility(customEmojiResults.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                customEmojiResults.forEach { emoji ->
-                                    AssistChip(
-                                        onClick = {
-                                            val firstMatch = statusText.text.checkCustomEmojis()
-                                                .first {
-                                                    it.range.contains(statusText.selection.min - 1) || it.range.contains(
-                                                        statusText.selection.max + 1
-                                                    )
-                                                }
-                                            statusText = statusText.copy(
-                                                text = statusText.text.replaceRange(
-                                                    firstMatch.range.first,
-                                                    firstMatch.range.last + 1,
-                                                    ":${emoji.shortcode}: "
-                                                ),
-                                                selection = TextRange(firstMatch.range.first + emoji.shortcode.length + 3)
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                text = emoji.shortcode
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            AsyncImage(
-                                                model = emoji.url,
-                                                contentDescription = emoji.shortcode,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    if (travelynxConfigured && !isEditMode) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            ) {
-                                SwitchWithIconAndText(
-                                    checked = enableTrwlCheckIn,
-                                    onCheckedChange = {
-                                        enableTrwlCheckIn = it
-                                    },
-                                    drawableId = R.drawable.ic_trwl,
-                                    stringId = R.string.check_in_trwl
-                                )
-                                SwitchWithIconAndText(
-                                    checked = enableTravelynxCheckIn,
-                                    onCheckedChange = {
-                                        enableTravelynxCheckIn = it
-                                    },
-                                    drawableId = R.drawable.ic_travelynx,
-                                    stringId = R.string.check_in_travelynx
-                                )
-                            }
-                        }
-                    }
-
-                    AnimatedVisibility(enableTrwlCheckIn) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            // Co-travellers
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                var coTravellerButtonModifier = Modifier.fillMaxWidth()
-                                if (introduceCoTravels) {
-                                    coTravellerButtonModifier = coTravellerButtonModifier
-                                        .introShowCaseTarget(
-                                            index = 1,
-                                            style = ShowcaseStyle.Default.copy(
-                                                backgroundColor = LocalColorScheme.current.primary,
-                                                backgroundAlpha = 0.95f,
-                                                targetCircleColor = LocalColorScheme.current.onPrimary
-                                            )
-                                        ) {
-                                            Column {
-                                                Text(
-                                                    text = stringResource(id = R.string.select_co_travellers),
-                                                    style = LocalFont.current.titleLarge,
-                                                    color = LocalColorScheme.current.onPrimary
-                                                )
-                                                Text(
-                                                    text = stringResource(id = R.string.select_co_travellers_description),
-                                                    color = LocalColorScheme.current.onPrimary
-                                                )
-                                                Text(
-                                                    text = stringResource(id = R.string.only_check_in_persons),
-                                                    color = LocalColorScheme.current.onPrimary,
-                                                    style = LocalFont.current.labelMedium
-                                                )
-                                            }
-                                        }
-                                }
-                                if (!isEditMode) {
-                                    OutlinedButtonWithIconAndText(
-                                        stringId = R.string.select_co_travellers,
-                                        drawableId = R.drawable.ic_also_check_in,
-                                        onClick = {
-                                            coTravellerSelectionVisible = true
-                                        },
-                                        modifier = coTravellerButtonModifier
-                                    )
-                                }
-                                if (selectedCoTravellers?.isNotEmpty() == true) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .horizontalScroll(rememberScrollState()),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
+                                    userResults.forEach {
+                                        val username = "@${it.username}"
                                         AssistChip(
                                             onClick = {
-                                                checkInViewModel.coTravellers.postValue(listOf())
+                                                val firstMatch =
+                                                    statusText.text.checkAnyUsernames()
+                                                        .first {
+                                                            it.range.contains(statusText.selection.min - 1) || it.range.contains(
+                                                                statusText.selection.max + 1
+                                                            )
+                                                        }
+                                                statusText = statusText.copy(
+                                                    text = statusText.text.replaceRange(
+                                                        firstMatch.range.first,
+                                                        firstMatch.range.last + 1,
+                                                        "@${it.username} "
+                                                    ),
+                                                    selection = TextRange(firstMatch.range.first + it.username.length + 2)
+                                                )
                                             },
                                             label = {
                                                 Text(
-                                                    text = stringResource(id = R.string.remove)
+                                                    text = username
                                                 )
                                             },
                                             leadingIcon = {
-                                                Icon(
-                                                    painter = painterResource(id = R.drawable.ic_remove),
-                                                    contentDescription = null
+                                                ProfilePicture(
+                                                    user = it,
+                                                    modifier = Modifier.size(24.dp)
                                                 )
                                             }
                                         )
-                                        selectedCoTravellers?.forEach {
-                                            AssistChip(
-                                                onClick = {
-                                                    coTravellerSelectionVisible = true
-                                                },
-                                                label = {
-                                                    Text(
-                                                        text = "@${it.user.username}"
-                                                    )
-                                                },
-                                                leadingIcon = {
-                                                    ProfilePicture(
-                                                        name = it.user.name,
-                                                        url = it.user.avatarUrl,
-                                                        modifier = Modifier.size(24.dp)
-                                                    )
-                                                }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    AnimatedVisibility(customEmojiResults.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            customEmojiResults.forEach { emoji ->
+                                AssistChip(
+                                    onClick = {
+                                        val firstMatch = statusText.text.checkCustomEmojis()
+                                            .first {
+                                                it.range.contains(statusText.selection.min - 1) || it.range.contains(
+                                                    statusText.selection.max + 1
+                                                )
+                                            }
+                                        statusText = statusText.copy(
+                                            text = statusText.text.replaceRange(
+                                                firstMatch.range.first,
+                                                firstMatch.range.last + 1,
+                                                ":${emoji.shortcode}: "
+                                            ),
+                                            selection = TextRange(firstMatch.range.first + emoji.shortcode.length + 3)
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = emoji.shortcode
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        AsyncImage(
+                                            model = emoji.url,
+                                            contentDescription = emoji.shortcode,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (travelynxConfigured && !isEditMode) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        ) {
+                            SwitchWithIconAndText(
+                                checked = enableTrwlCheckIn,
+                                onCheckedChange = {
+                                    enableTrwlCheckIn = it
+                                },
+                                drawableId = R.drawable.ic_trwl,
+                                stringId = R.string.check_in_trwl
+                            )
+                            SwitchWithIconAndText(
+                                checked = enableTravelynxCheckIn,
+                                onCheckedChange = {
+                                    enableTravelynxCheckIn = it
+                                },
+                                drawableId = R.drawable.ic_travelynx,
+                                stringId = R.string.check_in_travelynx
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(enableTrwlCheckIn) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        // Co-travellers
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            if (!isEditMode) {
+                                OutlinedButtonWithIconAndText(
+                                    stringId = R.string.select_co_travellers,
+                                    drawableId = R.drawable.ic_also_check_in,
+                                    onClick = {
+                                        coTravellerSelectionVisible = true
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            if (selectedCoTravellers?.isNotEmpty() == true) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AssistChip(
+                                        onClick = {
+                                            checkInViewModel.coTravellers.postValue(listOf())
+                                        },
+                                        label = {
+                                            Text(
+                                                text = stringResource(id = R.string.remove)
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_remove),
+                                                contentDescription = null
                                             )
                                         }
+                                    )
+                                    selectedCoTravellers?.forEach {
+                                        AssistChip(
+                                            onClick = {
+                                                coTravellerSelectionVisible = true
+                                            },
+                                            label = {
+                                                Text(
+                                                    text = "@${it.user.username}"
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                ProfilePicture(
+                                                    name = it.user.name,
+                                                    url = it.user.avatarUrl,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                        )
                                     }
                                 }
                             }
-                            // Option buttons
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val optionButtonModifier = Modifier
-                                    .weight(1f)
+                        }
+                        // Option buttons
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val optionButtonModifier = Modifier
+                                .weight(1f)
 
-                                if (selectedVisibility != null) {
-                                    OutlinedButtonWithIconAndText(
-                                        modifier = optionButtonModifier,
-                                        stringId = selectedVisibility!!.title,
-                                        drawableId = selectedVisibility!!.icon,
-                                        onClick = {
-                                            visibilitySelectionVisible = true
-                                        }
-                                    )
-                                }
-                                if (selectedBusiness != null) {
-                                    OutlinedButtonWithIconAndText(
-                                        modifier = optionButtonModifier,
-                                        stringId = selectedBusiness!!.title,
-                                        drawableId = selectedBusiness!!.icon,
-                                        onClick = {
-                                            businessSelectionVisible = true
-                                        }
-                                    )
-                                }
-                            }
-
-                            // Event button
-                            if (activeEvents.isNotEmpty()) {
+                            if (selectedVisibility != null) {
                                 OutlinedButtonWithIconAndText(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    drawableId = if (selectedEvent == null)
-                                        R.drawable.ic_calendar
-                                    else
-                                        R.drawable.ic_calendar_checked,
-                                    text = selectedEvent?.name
-                                        ?: stringResource(id = R.string.title_select_event),
+                                    modifier = optionButtonModifier,
+                                    stringId = selectedVisibility!!.title,
+                                    drawableId = selectedVisibility!!.icon,
                                     onClick = {
-                                        eventSelectionVisible = true
+                                        visibilitySelectionVisible = true
                                     }
                                 )
                             }
-
-                            // Share options
-                            if (!isEditMode && !loggedInUser?.mastodonUrl.isNullOrEmpty()) {
-                                ShareOptions(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    checkInViewModel = checkInViewModel
+                            if (selectedBusiness != null) {
+                                OutlinedButtonWithIconAndText(
+                                    modifier = optionButtonModifier,
+                                    stringId = selectedBusiness!!.title,
+                                    drawableId = selectedBusiness!!.icon,
+                                    onClick = {
+                                        businessSelectionVisible = true
+                                    }
                                 )
                             }
                         }
-                    }
 
-                    // Manual time overwrites
-                    if (isEditMode) {
-                        val currentDateTime = ZonedDateTime.now()
-                        val plannedDeparture = checkInViewModel.departureTime
-                        if (plannedDeparture != null && currentDateTime.isAfter(plannedDeparture.minusMinutes(30))) {
-                            DateTimeSelection(
-                                initDate = checkInViewModel.manualDepartureTime,
-                                plannedDate = checkInViewModel.departureTime,
-                                label = R.string.manual_departure,
+                        // Event button
+                        if (activeEvents.isNotEmpty()) {
+                            OutlinedButtonWithIconAndText(
                                 modifier = Modifier.fillMaxWidth(),
-                                dateSelected = { checkInViewModel.manualDepartureTime = it }
+                                drawableId = if (selectedEvent == null)
+                                    R.drawable.ic_calendar
+                                else
+                                    R.drawable.ic_calendar_checked,
+                                text = selectedEvent?.name
+                                    ?: stringResource(id = R.string.title_select_event),
+                                onClick = {
+                                    eventSelectionVisible = true
+                                }
                             )
                         }
-                        val plannedArrival = checkInViewModel.arrivalTime
-                        if (plannedArrival != null && currentDateTime.isAfter(plannedArrival.minusMinutes(30))) {
-                            DateTimeSelection(
-                                initDate = checkInViewModel.manualArrivalTime,
-                                plannedDate = checkInViewModel.arrivalTime,
-                                label = R.string.manual_arrival,
+
+                        // Share options
+                        if (!isEditMode && !loggedInUser?.mastodonUrl.isNullOrEmpty()) {
+                            ShareOptions(
                                 modifier = Modifier.fillMaxWidth(),
-                                dateSelected = { checkInViewModel.manualArrivalTime = it }
+                                checkInViewModel = checkInViewModel
                             )
                         }
                     }
+                }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        if (isEditMode) {
-                            ButtonWithIconAndText(
-                                stringId = R.string.change_destination,
-                                drawableId = R.drawable.ic_edit,
-                                onClick = changeDestinationAction
-                            )
-                        } else {
-                            Box {}
-                        }
-                        var isCheckingIn by remember { mutableStateOf(false) }
-                        ButtonWithIconAndText(
-                            stringId = if (isEditMode) R.string.save else R.string.check_in,
-                            drawableId = R.drawable.ic_check_in,
-                            onClick = {
-                                checkInViewModel.message.value = statusText.text
-                                checkInAction(
-                                    enableTrwlCheckIn,
-                                    (travelynxConfigured && enableTravelynxCheckIn)
-                                )
-                                isCheckingIn = true
-                            },
-                            isLoading = isCheckingIn,
-                            isEnabled = (enableTrwlCheckIn || (travelynxConfigured && enableTravelynxCheckIn))
+                // Manual time overwrites
+                if (isEditMode) {
+                    val currentDateTime = ZonedDateTime.now()
+                    val plannedDeparture = checkInViewModel.departureTime
+                    if (plannedDeparture != null && currentDateTime.isAfter(plannedDeparture.minusMinutes(30))) {
+                        DateTimeSelection(
+                            initDate = checkInViewModel.manualDepartureTime,
+                            plannedDate = checkInViewModel.departureTime,
+                            label = R.string.manual_departure,
+                            modifier = Modifier.fillMaxWidth(),
+                            dateSelected = { checkInViewModel.manualDepartureTime = it }
+                        )
+                    }
+                    val plannedArrival = checkInViewModel.arrivalTime
+                    if (plannedArrival != null && currentDateTime.isAfter(plannedArrival.minusMinutes(30))) {
+                        DateTimeSelection(
+                            initDate = checkInViewModel.manualArrivalTime,
+                            plannedDate = checkInViewModel.arrivalTime,
+                            label = R.string.manual_arrival,
+                            modifier = Modifier.fillMaxWidth(),
+                            dateSelected = { checkInViewModel.manualArrivalTime = it }
                         )
                     }
                 }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (isEditMode) {
+                        ButtonWithIconAndText(
+                            stringId = R.string.change_destination,
+                            drawableId = R.drawable.ic_edit,
+                            onClick = changeDestinationAction
+                        )
+                    } else {
+                        Box {}
+                    }
+                    var isCheckingIn by remember { mutableStateOf(false) }
+                    ButtonWithIconAndText(
+                        stringId = if (isEditMode) R.string.save else R.string.check_in,
+                        drawableId = R.drawable.ic_check_in,
+                        onClick = {
+                            checkInViewModel.message.value = statusText.text
+                            checkInAction(
+                                enableTrwlCheckIn,
+                                (travelynxConfigured && enableTravelynxCheckIn)
+                            )
+                            isCheckingIn = true
+                        },
+                        isLoading = isCheckingIn,
+                        isEnabled = (enableTrwlCheckIn || (travelynxConfigured && enableTravelynxCheckIn))
+                    )
+                }
             }
-            Box(modifier = Modifier.padding(top = 4.dp))
         }
+        Box(modifier = Modifier.padding(top = 4.dp))
     }
 }
 

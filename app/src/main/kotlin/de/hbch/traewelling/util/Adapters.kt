@@ -98,7 +98,7 @@ fun getLastDestination(trip: HafasTrip): String {
 
 fun getSwitzerlandLineName(productName: String, lineId: String): Pair<AnnotatedString?, Map<String, InlineTextContent>>? {
     // Switzerland lines start with 85 in the second block of line id
-    val match = "\\w+-85\\w*-(\\w+)\$".toRegex().find(lineId)
+    val match = "\\w+-85\\w*-(\\w+)$".toRegex().find(lineId)
     if (match != null) {
         val inlineTextContent = mutableMapOf<String, InlineTextContent>()
         val builder = AnnotatedString.Builder()
@@ -140,10 +140,10 @@ fun getSwitzerlandLineName(productName: String, lineId: String): Pair<AnnotatedS
 }
 
 private fun clarifyRingbahnBerlin(trip: HafasTrip): String {
-    if (trip.line == null || trip.direction == null || trip.line.operator == null)
+    if (trip.line == null || trip.direction == null)
         return ""
 
-    if (trip.line.operator.id == "s-bahn-berlin" && trip.direction.contains("Ring")) {
+    if (trip.direction.contains("Ring")) {
         return trip.direction.replace("S41", "↻")
             .replace("S42", "↺")
     }

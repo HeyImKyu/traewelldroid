@@ -36,8 +36,8 @@ class TravelynxCheckInProvider: CheckInProvider<Unit>() {
         val token: String,
         val action: String,
         @SerializedName("train") val journey: CheckInDataTrain,
-        @SerializedName("fromStation") val origin: String,
-        @SerializedName("toStation") val destination: String,
+        @SerializedName("fromStation") val origin: Long,
+        @SerializedName("toStation") val destination: Long,
         @SerializedName("comment") val message: String
     )
 

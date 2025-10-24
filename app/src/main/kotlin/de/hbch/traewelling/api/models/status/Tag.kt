@@ -11,7 +11,6 @@ data class Tag(
     val safeKey get() = key ?: TagType.UNKNOWN
 }
 
-@Suppress("unused")
 enum class TagType {
     @SerializedName("trwl:travel_class")
     TRAVEL_CLASS {
@@ -75,6 +74,20 @@ enum class TagType {
         override val title = R.string.tag_passenger_rights_title
         override val key = "trwl:passenger_rights"
         override val example = R.string.tag_passenger_rights_example
+    },
+    @SerializedName("trwl:journey_number")
+    JOURNEY_NUMBER {
+        override val icon = R.drawable.ic_route
+        override val title = R.string.tag_journey_number_title
+        override val key = "trwl:journey_number"
+        override val example = R.string.tag_journey_number_example
+    },
+    @SerializedName("trwl:price")
+    PRICE {
+        override val icon = R.drawable.ic_price
+        override val title = R.string.tag_price_title
+        override val key = "trwl:price"
+        override val example = R.string.tag_price_example
     },
     UNKNOWN {
         override val icon = R.drawable.ic_unknown

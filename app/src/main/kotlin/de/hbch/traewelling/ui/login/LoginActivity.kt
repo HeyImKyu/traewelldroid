@@ -4,8 +4,10 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -32,6 +34,7 @@ import net.openid.appauth.AuthorizationService
 import net.openid.appauth.ResponseTypeValues
 import java.security.MessageDigest
 import java.security.SecureRandom
+import androidx.core.net.toUri
 
 class LoginActivity : ComponentActivity() {
 
@@ -96,7 +99,7 @@ class LoginActivity : ComponentActivity() {
             SharedValues.AUTH_SERVICE_CONFIG,
             BuildConfig.OAUTH_CLIENT_ID,
             ResponseTypeValues.CODE,
-            Uri.parse(BuildConfig.OAUTH_REDIRECT_URL)
+            BuildConfig.OAUTH_REDIRECT_URL.toUri()
         )
         builder
             .setCodeVerifier(
@@ -186,6 +189,19 @@ class LoginActivity : ComponentActivity() {
                     redirectToMainActivity()
                 }
             )
+        } else {
+            val toast = Toast.makeText(this,
+                getString(R.string.push_registration_no_endpoint_error), Toast.LENGTH_SHORT)
+            toast.show()
+            if (Build.VERSION.SDK_INT >= 30) {
+                toast.addCallback(object : Toast.Callback() {
+                    override fun onToastHidden() {
+                        redirectToMainActivity()
+                    }
+                })
+            } else {
+                redirectToMainActivity()
+            }
         }
     }
 

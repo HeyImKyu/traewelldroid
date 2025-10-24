@@ -411,7 +411,7 @@ fun TagForm(
 @Preview
 @Composable
 private fun TagFormPreview() {
-    val tagViewModel = TagViewModel()
+    val tagViewModel = viewModel<TagViewModel>()
     MainTheme {
         Column(
             modifier = Modifier.padding(16.dp),

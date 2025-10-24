@@ -17,15 +17,13 @@ import de.hbch.traewelling.api.models.report.Report
 import de.hbch.traewelling.api.models.station.Station
 import de.hbch.traewelling.api.models.statistics.DailyStatistics
 import de.hbch.traewelling.api.models.statistics.PersonalStatistics
-import de.hbch.traewelling.api.models.status.*
+import de.hbch.traewelling.api.models.status.Status
+import de.hbch.traewelling.api.models.status.StatusPage
 import de.hbch.traewelling.api.models.status.Tag
+import de.hbch.traewelling.api.models.status.TrwlCheckInUpdateRequest
 import de.hbch.traewelling.api.models.trip.HafasTrainTrip
 import de.hbch.traewelling.api.models.trip.HafasTripPage
-import de.hbch.traewelling.api.models.user.CreateTrustedUser
-import de.hbch.traewelling.api.models.user.SaveUserSettings
-import de.hbch.traewelling.api.models.user.TrustedUser
-import de.hbch.traewelling.api.models.user.User
-import de.hbch.traewelling.api.models.user.UserSettings
+import de.hbch.traewelling.api.models.user.*
 import de.hbch.traewelling.api.models.webhook.WebhookUserCreateRequest
 import de.hbch.traewelling.api.models.wrapped.YearInReviewData
 import okhttp3.OkHttpClient
@@ -34,7 +32,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 

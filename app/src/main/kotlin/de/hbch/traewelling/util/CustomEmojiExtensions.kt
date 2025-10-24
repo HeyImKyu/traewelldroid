@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
-import java.lang.Exception
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -51,10 +50,14 @@ suspend fun Context.readOrDownloadCustomEmoji(
 }
 
 fun getCustomEmojiFromJson(json: String): List<CustomEmoji> {
-    return Gson().fromJson(
-        json,
-        object : TypeToken<List<CustomEmoji>>() {}.type
-    )
+    return try {
+        Gson().fromJson(
+            json,
+            object : TypeToken<List<CustomEmoji>>() {}.type
+        )
+    } catch (_: Exception) {
+        return listOf()
+    }
 }
 
 fun String.extractCustomEmojis() = ":(\\w+):".toRegex().findAll(this).toList()

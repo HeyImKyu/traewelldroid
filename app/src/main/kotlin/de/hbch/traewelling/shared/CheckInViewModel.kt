@@ -25,15 +25,19 @@ import retrofit2.Response
 import java.time.ZonedDateTime
 
 class CheckInViewModel : ViewModel() {
-    val trwlProvider: TrwlCheckInProvider
-    val travelynxProvider: TravelynxCheckInProvider
+    val trwlProvider: TrwlCheckInProvider = TrwlCheckInProvider()
+    val travelynxProvider: TravelynxCheckInProvider = TravelynxCheckInProvider()
 
     var lineName: String = ""
     var lineId: String? = null
     var operatorCode: String? = null
     var tripId: String = ""
-    var startStationId: Int = 0
-    var destinationStationId: Int = 0
+    var originId: Int = 0
+    var destinationId: Int = 0
+    var origin: String = ""
+    var destination: String = ""
+    var originEvaIdentifier: Long? = null
+    var destinationEvaIdentifier: Long? = null
     var departureTime: ZonedDateTime? = null
     var manualDepartureTime: ZonedDateTime? = null
     var arrivalTime: ZonedDateTime? = null
@@ -45,8 +49,6 @@ class CheckInViewModel : ViewModel() {
     val statusBusiness = MutableLiveData(StatusBusiness.PRIVATE)
     val event = MutableLiveData<Event?>()
     var category: ProductType = ProductType.ALL
-    var origin: String = ""
-    var destination: String = ""
     var trwlCheckInResponse: CheckInResponse<TrwlCheckInResponse>? = null
     var travelynxCheckInResponse: CheckInResponse<Unit>? = null
     var forceCheckIn: Boolean = false
@@ -54,25 +56,25 @@ class CheckInViewModel : ViewModel() {
     var coTravellers = MutableLiveData(listOf<TrustedUser>())
 
     init {
-        trwlProvider = TrwlCheckInProvider()
-        travelynxProvider = TravelynxCheckInProvider()
         reset()
     }
 
     fun reset() {
         manualArrivalTime = null
         manualDepartureTime = null
-        destinationStationId = 0
         arrivalTime = null
         tripId = ""
         lineName = ""
         operatorCode = null
         lineId = null
-        startStationId = 0
         departureTime = null
         message.value = ""
         origin = ""
         destination = ""
+        originId = 0
+        destinationId = 0
+        originEvaIdentifier = null
+        destinationEvaIdentifier = null
         toot.value = false
         chainToot.value = false
         statusVisibility.postValue(StatusVisibility.PUBLIC)
@@ -109,8 +111,8 @@ class CheckInViewModel : ViewModel() {
                 chainToot.value ?: false,
                 tripId,
                 lineName,
-                startStationId,
-                destinationStationId,
+                originId,
+                destinationId,
                 departureTime ?: ZonedDateTime.now(),
                 arrivalTime ?: ZonedDateTime.now(),
                 coTravellers.value?.map { it.user.id } ?: listOf(),
@@ -124,8 +126,8 @@ class CheckInViewModel : ViewModel() {
             val request = TravelynxCheckInRequest(
                 SharedValues.TRAVELYNX_TOKEN,
                 tripId,
-                origin,
-                destination,
+                originEvaIdentifier ?: -1L,
+                destinationEvaIdentifier ?: -1L,
                 message.value ?: ""
             )
             travelynxCheckInResponse = travelynxProvider.checkIn(request)
@@ -141,7 +143,7 @@ class CheckInViewModel : ViewModel() {
                 message.value,
                 statusBusiness.value?.ordinal ?: error("Invalid data"),
                 statusVisibility.value?.ordinal ?: error("Invalid data"),
-                destinationStationId,
+                destinationId,
                 arrivalTime,
                 manualDepartureTime,
                 manualArrivalTime,

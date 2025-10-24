@@ -16,26 +16,16 @@ import androidx.compose.ui.platform.LocalContext
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.shared.SharedValues
 
-private val DarkColorScheme = darkColorScheme(
+val DarkColorScheme = darkColorScheme(
     primary = TraewelldroidDark,
     secondary = TraewelldroidDark,
     tertiary = TraewelldroidDark
 )
 
-private val LightColorScheme = lightColorScheme(
+val LightColorScheme = lightColorScheme(
     primary = Traewelldroid,
     secondary = Traewelldroid,
     tertiary = Traewelldroid
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
 )
 
 @Composable

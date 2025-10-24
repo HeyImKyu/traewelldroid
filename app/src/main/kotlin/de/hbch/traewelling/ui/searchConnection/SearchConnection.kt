@@ -41,7 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,6 +71,7 @@ import de.hbch.traewelling.ui.include.cardSearchStation.CardSearch
 import de.hbch.traewelling.util.getDelayColor
 import de.hbch.traewelling.util.getLastDestination
 import de.hbch.traewelling.util.getLocalTimeString
+import de.hbch.traewelling.util.openLink
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -84,6 +87,7 @@ fun SearchConnection(
     onHomelandSelected: (Station) -> Unit = { }
 ) {
     val viewModel: SearchConnectionViewModel = viewModel()
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     var timeTableError by remember { mutableStateOf(false) }
@@ -91,8 +95,12 @@ fun SearchConnection(
     var hafasTripPage by remember { mutableStateOf<HafasTripPage?>(null) }
     var stationId by rememberSaveable { mutableIntStateOf(station) }
     val stationName by remember { derivedStateOf { hafasTripPage?.meta?.station?.name ?: "" } }
-    val trips by remember { derivedStateOf { hafasTripPage?.data ?: listOf() } }
+    val trips by remember { derivedStateOf {
+        val data = hafasTripPage?.data ?: listOf()
+        data
+    } }
     val times by remember { derivedStateOf { hafasTripPage?.meta?.times } }
+    val removedCount by remember { derivedStateOf { hafasTripPage?.meta?.removedCount } }
 
     val scrollState = rememberScrollState()
     var searchDate by remember { mutableStateOf(currentSearchDate) }
@@ -180,11 +188,12 @@ fun SearchConnection(
                             onTripSelection = { trip ->
                                 checkInViewModel.reset()
                                 checkInViewModel.lineName =
-                                    trip.line?.name ?: trip.line?.journeyNumber?.toString() ?: ""
+                                    trip.line?.name ?: trip.line?.journeyNumber ?: ""
                                 checkInViewModel.lineId = trip.line?.id
                                 checkInViewModel.operatorCode = trip.line?.operator?.id
                                 checkInViewModel.tripId = trip.tripId
-                                checkInViewModel.startStationId = trip.station?.id ?: -1
+                                checkInViewModel.originId = trip.station?.id ?: -1
+                                checkInViewModel.originEvaIdentifier = trip.station?.evaIdentifier
                                 checkInViewModel.departureTime = trip.plannedDeparture
                                 checkInViewModel.category =
                                     trip.line?.safeProductType ?: ProductType.UNKNOWN
@@ -211,6 +220,16 @@ fun SearchConnection(
                         )
                     }
                 }
+            }
+            if (removedCount != null) {
+                Text(
+                    text = pluralStringResource(R.plurals.removed_departures, removedCount ?: 0, removedCount ?: 0),
+                    style = LocalFont.current.labelSmall,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.clickable {
+                        context.openLink("https://help.traewelling.de/features/timetable/licensing/")
+                    }
+                )
             }
         }
         Box { }
@@ -375,8 +394,8 @@ fun SearchConnection(
                 isCancelled = trip.isCancelled,
                 destination = getLastDestination(trip),
                 departureStation =
-                    if (!trip.station?.name.isNullOrBlank() && stationId != null && trip.station.id != stationId && displayDivergentStop)
-                        trip.station.name
+                    if (!trip.station?.name.isNullOrBlank() && stationId != null && trip.station?.id != stationId && displayDivergentStop)
+                        trip.station?.name
                     else
                         null,
                 hafasLine = trip.line,
@@ -521,7 +540,7 @@ fun Platform(
     planned: String?,
     real: String?
 ) {
-    if (planned != null || real != null) {
+    if (!planned.isNullOrBlank() || !real.isNullOrBlank()) {
         val color = if (real != null && planned != null && real != planned) Color.Red else Color.Blue
         Box(
             modifier = Modifier

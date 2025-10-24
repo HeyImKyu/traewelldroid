@@ -1,6 +1,13 @@
 package de.hbch.traewelling.logging
 
-import io.sentry.Sentry
+import android.app.Application
+import org.acra.data.StringFormat
+import org.acra.ktx.initAcra
+import de.hbch.traewelling.BuildConfig
+import org.acra.ACRA
+import org.acra.config.httpSender
+import org.acra.ktx.sendSilentlyWithAcra
+import org.acra.sender.HttpSender
 
 class Logger private constructor(): ILogger {
 
@@ -23,15 +30,32 @@ class Logger private constructor(): ILogger {
         }
     }
 
+    override fun initialize(application: Application) {
+        if (BuildConfig.ENABLE_ACRA) {
+            application.initAcra {
+                buildConfigClass = BuildConfig::class.java
+                reportFormat = StringFormat.JSON
+
+                httpSender {
+                    uri = BuildConfig.ACRA_ENDPOINT
+                    basicAuthLogin = BuildConfig.ACRA_USERNAME
+                    basicAuthPassword = BuildConfig.ACRA_PASSWORD
+                    httpMethod = HttpSender.Method.POST
+                }
+            }
+        }
+    }
+
     override fun captureException(t: Throwable) {
-        Sentry.captureException(t)
+        if (needsToBeLogged(t)) {
+            t.sendSilentlyWithAcra()
+        }
     }
 
     override fun captureMessage(message: String, additionalInfo: Map<String, String>) {
-        Sentry.captureMessage(message) {
-            additionalInfo.forEach { (key, value) ->
-                it.setExtra(key, value)
-            }
+        additionalInfo.forEach {
+            ACRA.errorReporter.putCustomData(it.key, it.value)
         }
+        Exception(message).sendSilentlyWithAcra()
     }
 }

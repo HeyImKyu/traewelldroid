@@ -61,6 +61,8 @@ fun EditProfile(
 
     var username by rememberSaveable { mutableStateOf("") }
     var displayName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var bio by rememberSaveable { mutableStateOf("") }
     var privateProfile by rememberSaveable { mutableStateOf(false) }
     var collectPoints by rememberSaveable { mutableStateOf(false) }
     var allowLikes by rememberSaveable { mutableStateOf(false) }
@@ -76,17 +78,20 @@ fun EditProfile(
     var formErrorString by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(userSettings) {
-        if (userSettings != null) {
-            username = userSettings!!.username
-            displayName = userSettings!!.displayName
-            privateProfile = userSettings!!.privateProfile
-            collectPoints = userSettings!!.pointsEnabled
-            allowLikes = userSettings!!.likesEnabled
-            showHideCheckInsAfter = userSettings!!.privacyHideDays > 0
-            hideCheckInsAfter = userSettings!!.privacyHideDays.toString()
-            defaultStatusVisibility = userSettings!!.defaultStatusVisibility
-            defaultMastodonVisibility = userSettings!!.mastodonVisibility ?: StatusVisibility.PUBLIC
-            allowedPersonsToCheckIn = userSettings!!.allowedPersonsToCheckIn
+        val settings = userSettings
+        if (settings != null) {
+            username = settings.username
+            displayName = settings.displayName
+            email = settings.email
+            bio = settings.bio ?: ""
+            privateProfile = settings.privateProfile
+            collectPoints = settings.pointsEnabled
+            allowLikes = settings.likesEnabled
+            showHideCheckInsAfter = settings.privacyHideDays > 0
+            hideCheckInsAfter = settings.privacyHideDays.toString()
+            defaultStatusVisibility = settings.defaultStatusVisibility
+            defaultMastodonVisibility = settings.mastodonVisibility ?: StatusVisibility.PUBLIC
+            allowedPersonsToCheckIn = settings.allowedPersonsToCheckIn
         }
     }
 
@@ -144,6 +149,53 @@ fun EditProfile(
                 )
             },
             isError = formErrorString?.contains("displayName") == true
+        )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = formModifier,
+            singleLine = true,
+            maxLines = 1,
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_email),
+                    contentDescription = null
+                )
+            },
+            placeholder = {
+                Text(
+                    text = stringResource(id = R.string.email)
+                )
+            },
+            label = {
+                Text(
+                    text = stringResource(id = R.string.email)
+                )
+            },
+            isError = formErrorString?.contains("email") == true
+        )
+        OutlinedTextField(
+            value = bio,
+            onValueChange = { bio = it },
+            modifier = formModifier,
+            singleLine = false,
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_quote),
+                    contentDescription = null
+                )
+            },
+            placeholder = {
+                Text(
+                    text = stringResource(id = R.string.bio)
+                )
+            },
+            label = {
+                Text(
+                    text = stringResource(id = R.string.bio)
+                )
+            },
+            isError = formErrorString?.contains("bio") == true
         )
         SwitchWithIconAndText(
             modifier = formModifier,
@@ -392,14 +444,12 @@ fun EditProfile(
                 }
             }
         }
-        AnimatedVisibility(allowedPersonsToCheckIn == AllowedPersonsToCheckIn.TRUSTED_USERS) {
-            OutlinedButtonWithIconAndText(
-                stringId = R.string.trusted,
-                modifier = formModifier,
-                onClick = manageTrustedUsers,
-                drawableId = R.drawable.ic_authorized
-            )
-        }
+        OutlinedButtonWithIconAndText(
+            stringId = R.string.trusted,
+            modifier = formModifier,
+            onClick = manageTrustedUsers,
+            drawableId = R.drawable.ic_trusted
+        )
         ButtonWithIconAndText(
             stringId = R.string.save,
             drawableId = R.drawable.ic_check_in,
@@ -412,13 +462,15 @@ fun EditProfile(
                         SaveUserSettings(
                             username,
                             displayName,
+                            bio,
                             privateProfile,
                             defaultStatusVisibility.ordinal,
                             hideDays,
                             defaultMastodonVisibility.ordinal,
                             allowedPersonsToCheckIn,
                             allowLikes,
-                            collectPoints
+                            collectPoints,
+                            email
                         )
                     )
                     if (response != null) {

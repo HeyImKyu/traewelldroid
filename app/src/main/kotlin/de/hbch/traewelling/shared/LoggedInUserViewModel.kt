@@ -26,7 +26,7 @@ import retrofit2.Response
 
 class LoggedInUserViewModel : ViewModel() {
 
-    protected val _user = MutableLiveData<User?>()
+    private val _user = MutableLiveData<User?>()
 
     val user: LiveData<User?> get() = _user
 

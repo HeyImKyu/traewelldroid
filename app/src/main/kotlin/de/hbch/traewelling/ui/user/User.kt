@@ -14,6 +14,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,17 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.canopas.lib.showcase.IntroShowcase
-import com.canopas.lib.showcase.component.ShowcaseStyle
-import com.canopas.lib.showcase.component.rememberIntroShowcaseState
-import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.user.User
 import de.hbch.traewelling.shared.LoggedInUserViewModel
-import de.hbch.traewelling.shared.SharedValues
 import de.hbch.traewelling.theme.LocalColorScheme
 import de.hbch.traewelling.theme.LocalFont
 import de.hbch.traewelling.theme.MainTheme
@@ -86,19 +83,13 @@ private fun UserCardContent(
     editProfile: () -> Unit = { }
 ) {
     val context = LocalContext.current
-    val secureStorage = remember { SecureStorage(context) }
     val coroutineScope = rememberCoroutineScope()
     val manageFollowersViewModel: ManageFollowersViewModel = viewModel()
-
-    var introduceProfileEdit by remember { mutableStateOf(
-        !(secureStorage.getObject(SharedValues.SS_EDIT_PROFILE_SHOWCASE, Boolean::class.java) ?: false)
-    ) }
 
     var unfollowDialogVisible by remember { mutableStateOf(false) }
     var followedBy by remember { mutableStateOf(user.followedBy) }
 
     val isOwnProfile = loggedInUser.id == user.id
-    val showCaseState = rememberIntroShowcaseState()
 
     if (unfollowDialogVisible) {
         var isRemoving by remember { mutableStateOf(false) }
@@ -147,46 +138,16 @@ private fun UserCardContent(
         ) {
             // Edit profile button
             if (isOwnProfile) {
-                IntroShowcase(
-                    showIntroShowCase = introduceProfileEdit,
-                    onShowCaseCompleted = {
-                        secureStorage.storeObject(SharedValues.SS_EDIT_PROFILE_SHOWCASE, true)
-                        introduceProfileEdit = false
-                    },
-                    dismissOnClickOutside = true,
-                    state = showCaseState
+                IconButton(
+                    onClick = editProfile,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
                 ) {
-                    IconButton(
-                        onClick = editProfile,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .introShowCaseTarget(
-                                index = 0,
-                                style = ShowcaseStyle.Default.copy(
-                                    backgroundColor = LocalColorScheme.current.primary,
-                                    backgroundAlpha = 0.95f,
-                                    targetCircleColor = LocalColorScheme.current.onPrimary
-                                )
-                            ) {
-                                Column {
-                                    Text(
-                                        text = stringResource(id = R.string.edit_profile),
-                                        style = LocalFont.current.titleLarge,
-                                        color = LocalColorScheme.current.onPrimary
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.edit_profile_description),
-                                        color = LocalColorScheme.current.onPrimary
-                                    )
-                                }
-                            }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_edit),
-                            contentDescription = null,
-                            tint = LocalColorScheme.current.primary
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_edit),
+                        contentDescription = null,
+                        tint = LocalColorScheme.current.primary
+                    )
                 }
             }
 
@@ -249,6 +210,22 @@ private fun UserCardContent(
                         style = LocalFont.current.titleMedium,
                         text = "@${user.username}"
                     )
+                }
+                if (user.bio != null && user.bio.isNotEmpty()) {
+                    OutlinedCard(
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp).fillMaxWidth()
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                style = LocalFont.current.bodyMedium,
+                                text = user.bio,
+                                textAlign = TextAlign.Justify
+                            )
+                        }
+                    }
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -439,11 +416,12 @@ private fun UserCardPreview() {
         false,
         null,
         null,
-        false,
-        false,
-        false,
-        null,
-        false
+        following = false,
+        followRequestPending = false,
+        muted = false,
+        defaultStatusVisibility = null,
+        followedBy = false,
+        bio = "hello world, meow"
     )
     val user2 = User(
         1,
@@ -457,11 +435,12 @@ private fun UserCardPreview() {
         true,
         null,
         null,
-        false,
-        false,
-        false,
-        null,
-        true
+        following = false,
+        followRequestPending = false,
+        muted = false,
+        defaultStatusVisibility = null,
+        followedBy = true,
+        bio = null,
     )
 
     MainTheme {

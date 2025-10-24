@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -183,35 +184,41 @@ fun StatusDetail(
                         )
                     }
                 }
-                ButtonWithIconAndText(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.open_with_bahnexpert),
-                    drawableId = R.drawable.ic_train,
-                    onClick = {
-                        val dStatus = status
-                        if (dStatus != null) {
+                val dStatus = status
+                val journeyNumber = dStatus?.journey?.manualJourneyNumber ?: dStatus?.journey?.journeyNumber
+                if (dStatus != null && journeyNumber != null) {
+                    ButtonWithIconAndText(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(id = R.string.open_with_bahnexpert),
+                        drawableId = R.drawable.ic_train,
+                        onClick = {
                             val intent = CustomTabsIntent.Builder()
                                 .setShowTitle(false)
                                 .build()
 
-                            val isoDate = DateTimeFormatter.ISO_INSTANT.format(dStatus.journey.origin.departurePlanned)
+                            val isoDate =
+                                DateTimeFormatter.ISO_INSTANT.format(dStatus.journey.origin.departurePlanned)
 
                             val uri = Uri.Builder()
                                 .scheme("https")
                                 .authority("bahn.expert")
                                 .appendPath("details")
-                                .appendPath(dStatus.journey.journeyNumber.toString())
+                                .appendPath(journeyNumber)
                                 .appendPath(isoDate)
-                                .appendQueryParameter("station", dStatus.journey.origin.evaIdentifier.toString())
+                                .appendQueryParameter(
+                                    "station",
+                                    dStatus.journey.origin.evaIdentifier.toString()
+                                )
                                 .build()
 
                             intent.launchUrl(
                                 context,
                                 uri
                             )
+
                         }
-                    }
-                )
+                    )
+                }
                 if (operator != null) {
                     Text(
                         text = operator ?: "",
@@ -241,6 +248,13 @@ fun StatusDetail(
                         maxLines = 2
                     )
                 }
+                Text(
+                    text = status?.journey?.dataSource?.attribution ?: "",
+                    style = LocalFont.current.labelSmall,
+                    fontStyle = FontStyle.Italic,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
@@ -321,7 +335,7 @@ private fun StatusLikes(
     val likeUsers = remember { mutableStateListOf<User>() }
 
     LaunchedEffect(cardExpanded) {
-        if (cardExpanded && likeUsers.size == 0) {
+        if (cardExpanded && likeUsers.isEmpty()) {
             statusDetailViewModel.getLikesForStatus(
                 statusId,
                 {
@@ -375,7 +389,7 @@ private fun StatusLikes(
                 if (isLoading) {
                     DataLoading()
                 } else {
-                    if (likeUsers.size > 0) {
+                    if (likeUsers.isNotEmpty()) {
                         Column(
                             modifier = Modifier.fillMaxWidth()
                         ) {

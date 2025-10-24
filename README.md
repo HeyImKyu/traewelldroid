@@ -10,7 +10,6 @@ This is a community app for the open source project
 
 - [traewelldroid.de](https://traewelldroid.de)
 - <a href="https://zug.network/@traewelldroid" rel="nofollow me">Mastodon</a>
-- [Twitter](https://twitter.com/@traewelldroid)
 
 ## Download the app
 
@@ -20,24 +19,28 @@ This is a community app for the open source project
 ## How it is developed
 
 The app is using the official Jetpack Compose framework by Google. Crashes of the app are detected
-and transmitted by [Sentry](https://sentry.io). For the production version of the app deployed to
-Google Play, a self-hosted Sentry instance is used. Feature Flags are possible and implemented via
+and transmitted by ACRA. For the production version of the app deployed to
+Google Play, a self-hosted Acrarium instance is used. Feature Flags are possible and implemented via
 a self-hosted Unleash instance.
 
 ## Setup
 
 Personalised properties can be configured in the app-level `build.gradle` file.
 
-| Property name        | Usage                                       | Mandatory |
-| -------------------- | ------------------------------------------- | --------- |
-| `SENTRY_DSN`         | The DSN used for error logging with Sentry. | No        |
-| `OAUTH_CLIENT_ID`    | The OAuth client id                         | Yes       |
-| `OAUTH_REDIRECT_URL` | The OAuth redirect URL                      | Yes       |
-| `REPO_URL`           | The URL to the repository                   | No        |
-| `PRIVACY_URL`        | URL to the privacy statement and imprint.   | Yes       |
-| `UNLEASH_URL`        | API URL to reach the Unleash API            | No        |
-| `UNLEASH_KEY`        | API Key for Unleash API                     | No        |
-| `WEBHOOK_URL`        | URL for accepting Träwelling webhooks       | No        |
+| Property name        | Usage                                                                                                                                | Mandatory  |
+|----------------------|--------------------------------------------------------------------------------------------------------------------------------------|------------|
+| `OAUTH_CLIENT_ID`    | The OAuth client id used for authentication with Träwelling.                                                                         | Yes        |
+| `OAUTH_REDIRECT_URL` | The OAuth redirect URL                                                                                                               | Yes        |
+| `REPO_URL`           | The URL to the repository                                                                                                            | No         |
+| `PRIVACY_URL`        | URL to the privacy statement and imprint.                                                                                            | Yes        |
+| `UNLEASH_URL`        | API URL to reach the Unleash API                                                                                                     | No         |
+| `UNLEASH_KEY`        | API Key for Unleash API                                                                                                              | No         |
+| `WEBHOOK_URL`        | URL for accepting Träwelling webhooks                                                                                                | No         |
+| `ENABLE_ACRA`        | Enable ACRA reporting.                                                                                                               | Yes        |
+| `ACRA_REPORT_MAIL`   | Mail to which ACRA reports are sent in FOSS.                                                                                         | Yes (foss) |
+| `ACRA_ENDPOINT`      | Endpoint for ACRA compatible server                                                                                                  | Yes (play) |
+| `ACRA_USERNAME`      | Username for ACRA compatible server                                                                                                  | Yes (play) |
+| `ACRA_PASSWORD`      | Password for ACRA compatible server                                                                                                  | Yes (play) |
 
 ## Contributions
 

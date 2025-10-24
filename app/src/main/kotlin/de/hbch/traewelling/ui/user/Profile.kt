@@ -68,7 +68,7 @@ fun Profile(
     var initialized by remember { mutableStateOf(false) }
 
     listState.OnBottomReached {
-        if (userStatusViewModel.checkIns.size > 0) {
+        if (userStatusViewModel.checkIns.isNotEmpty()) {
             userStatusViewModel.loadStatusesForUser(page = ++currentPage)
         }
     }

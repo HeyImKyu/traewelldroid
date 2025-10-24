@@ -77,11 +77,9 @@ fun Dashboard(
     val trwlDown by featureFlags.trwlDown.observeAsState(false)
 
     checkInListState.OnBottomReached {
-        if (dashboardViewModel.checkIns.size > 0) {
+        if (dashboardViewModel.checkIns.isNotEmpty()) {
             dashboardViewModel.loadCheckIns(++currentPage)
         } else {
-            loggedInUserViewModel.getLoggedInUser()
-            loggedInUserViewModel.getLastVisitedStations {  }
             coroutineScope.launch {
                 loggedInUserViewModel.updateCurrentStatus()
             }

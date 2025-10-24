@@ -20,6 +20,7 @@ data class User(
     @SerializedName("following") val following: Boolean,
     @SerializedName("followPending") val followRequestPending: Boolean,
     @SerializedName("muted") val muted: Boolean,
+    @SerializedName("bio") val bio: String?,
     val defaultStatusVisibility: StatusVisibility?,
     val followedBy: Boolean
 ) {
