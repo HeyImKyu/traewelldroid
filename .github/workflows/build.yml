@@ -47,7 +47,7 @@ jobs:
           files: /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
           dest: assembly.zip
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with: 
           name: assembly
           path: assembly.zip
