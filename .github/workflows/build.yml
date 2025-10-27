@@ -47,7 +47,7 @@ jobs:
           files: /home/runner/work/traewelldroid/traewelldroid/build/outputs/apk
           dest: assembly.zip
           
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: 
           name: assembly
           path: assembly.zip
@@ -86,13 +86,13 @@ jobs:
         run: ./gradlew bundlePlayRelease
 
       - name: Upload Foss Release APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: foss-release-apk
           path: ${{ runner.temp }}/app-foss-release.apk
 
       - name: Upload Play Release APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: play-release-apk
           path: ${{ runner.temp }}/app-play-release.apk

@@ -30,12 +30,12 @@ jobs:
       - name: ls
         run: ls /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
           
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: 
           name: play.apk
           path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/play/debug/app-play-debug.apk      
           
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: 
           name: foss.apk
           path: /home/runner/work/traewelldroid/traewelldroid/app/build/outputs/apk/foss/debug/app-foss-debug.apk
