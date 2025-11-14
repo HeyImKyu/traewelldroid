@@ -183,7 +183,7 @@ dependencies {
     implementation 'io.getunleash:unleash-android-proxy-sdk:1.0.0'
 
     // Sentry
-    playImplementation 'io.sentry:sentry-android:7.14.0'
+    playImplementation 'io.sentry:sentry-android:8.14.0'
 
     // Unified Push
     implementation 'com.github.UnifiedPush:android-connector:2.1.1'
