@@ -29,6 +29,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' || (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev' && github.ref_type != 'tag') }}
 
       - name: Assemble Foss Debug
         run: ./gradlew assembleFossDebug

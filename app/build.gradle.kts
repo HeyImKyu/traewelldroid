@@ -3,9 +3,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    kotlin("android")
-    kotlin("kapt")
-    id("com.mikepenz.aboutlibraries.plugin.android")
+    id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
@@ -121,7 +119,7 @@ android {
 
 dependencies {
     // Jetpack Compose
-    val composeVersion = "1.10.0"
+    val composeVersion = "1.10.2"
     implementation("androidx.compose.runtime:runtime:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
@@ -132,7 +130,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-themeadapter-material3:0.36.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation("androidx.compose.material3:material3:1.4.0")
-    implementation("androidx.activity:activity-compose:1.12.2")
+    implementation("androidx.activity:activity-compose:1.12.3")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
 
     implementation("androidx.core:core-ktx:1.17.0")
@@ -161,7 +159,7 @@ dependencies {
     implementation("com.github.jcloquell:android-secure-storage:0.1.3")
 
     // Navigation Component
-    implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
 
     // Retrofit
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
@@ -187,14 +185,11 @@ dependencies {
         exclude("com.google.firebase", "firebase-measurement-connector")
     }
 
-    // CSV reader
-    implementation("com.jsoizo:kotlin-csv-jvm:1.10.0")
-
     // Reviews
     "playImplementation"("com.google.android.play:review:2.0.2")
     "playImplementation"("com.google.android.play:review-ktx:2.0.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
     val acraVersion = "5.13.1"
     "playImplementation"("ch.acra:acra-http:$acraVersion")
