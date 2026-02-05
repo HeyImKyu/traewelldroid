@@ -125,8 +125,7 @@ fun SelectDestination(
                         FromToTextRow(
                             category = trip!!.safeProductType,
                             lineName = trip!!.lineName,
-                            lineId = checkInViewModel.lineId,
-                            operatorCode = checkInViewModel.operatorCode,
+                            lineColor = trip!!.lineColor,
                             destination = trip!!.destination.name,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -168,8 +167,7 @@ fun FromToTextRow(
     modifier: Modifier = Modifier,
     category: ProductType?,
     lineName: String,
-    lineId: String?,
-    operatorCode: String?,
+    lineColor: String?,
     destination: String
 ) {
     Row(
@@ -185,11 +183,10 @@ fun FromToTextRow(
         }
         LineIcon(
             lineName = lineName,
-            lineId = lineId,
-            operatorCode = operatorCode,
             modifier = Modifier.padding(start = 4.dp),
             defaultTextStyle = LocalFont.current.titleLarge,
-            journeyNumber = null
+            journeyNumber = null,
+            lineColorString = lineColor
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right),

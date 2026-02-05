@@ -3,7 +3,6 @@ package de.hbch.traewelling.ui.login
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Color
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
@@ -20,7 +19,7 @@ import androidx.lifecycle.MutableLiveData
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.hbch.traewelling.BuildConfig
 import de.hbch.traewelling.R
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.api.AuthManager
 import de.hbch.traewelling.api.getGson
 import de.hbch.traewelling.api.models.webhook.WebhookCreateResponse
 import de.hbch.traewelling.api.models.webhook.WebhookUserCreateRequest
@@ -35,6 +34,7 @@ import net.openid.appauth.ResponseTypeValues
 import java.security.MessageDigest
 import java.security.SecureRandom
 import androidx.core.net.toUri
+import net.openid.appauth.AuthState
 
 class LoginActivity : ComponentActivity() {
 
@@ -126,7 +126,7 @@ class LoginActivity : ComponentActivity() {
         initAuthRequest()
         try {
             authorizationLauncher.launch(authIntent)
-        } catch (exception: ActivityNotFoundException) {
+        } catch (_: ActivityNotFoundException) {
             val alertDialog = AlertDialog.Builder(this).create()
             alertDialog.setTitle(getString(R.string.no_browser_title))
             alertDialog.setMessage(getString(R.string.no_browser_description))
@@ -140,15 +140,15 @@ class LoginActivity : ComponentActivity() {
     private fun handleAuthorizationResponse(intent: Intent) {
         isLoading.postValue(true)
         val authorizationResponse: AuthorizationResponse? = AuthorizationResponse.fromIntent(intent)
-
+        val authState = AuthState(authorizationResponse, null)
         if (authorizationResponse != null) {
             val tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest()
-            authorizationService.performTokenRequest(tokenExchangeRequest) { response, _ ->
+            authorizationService.performTokenRequest(tokenExchangeRequest) { response, ex ->
+                authState.update(response, ex)
+                AuthManager.getInstance(this).replace(authState)
+
                 if (response?.accessToken != null) {
-                    secureStorage.storeObject(SharedValues.SS_JWT, response.accessToken!!)
-                    secureStorage.storeObject(SharedValues.SS_REFRESH_TOKEN, response.refreshToken ?: "")
                     secureStorage.storeObject(SharedValues.SS_NOTIFICATIONS_ENABLED, notificationsEnabled)
-                    TraewellingApi.jwt = response.accessToken!!
                     if (notificationsEnabled) {
                         val webhookResponse = getGson().fromJson(
                             response.additionalParameters["webhook"],

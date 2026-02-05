@@ -1,16 +1,18 @@
 package de.hbch.traewelling.ui.user
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.user.CreateTrustedUser
 import de.hbch.traewelling.api.models.user.TrustedUser
 import java.time.ZonedDateTime
 
-class TrustedUsersViewModel: ViewModel() {
+class TrustedUsersViewModel(application: Application): AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     suspend fun getTrustedUsers(): List<TrustedUser>? {
         return try {
-            val response = TraewellingApi.userService.getTrustedUsers()
+            val response = traewellingApi.userService.getTrustedUsers()
             response.body()?.data
         } catch (_: Exception) {
             null
@@ -19,7 +21,7 @@ class TrustedUsersViewModel: ViewModel() {
 
     suspend fun addTrustedUser(userId: Int, expiresAt: ZonedDateTime?): Boolean {
         return try {
-            val response = TraewellingApi.userService.trustUser(CreateTrustedUser(userId, expiresAt))
+            val response = traewellingApi.userService.trustUser(CreateTrustedUser(userId, expiresAt))
             response.isSuccessful
         } catch (_: Exception) {
             false
@@ -28,7 +30,7 @@ class TrustedUsersViewModel: ViewModel() {
 
     suspend fun removeTrustedUser(userId: Int): Boolean {
         return try {
-            val response = TraewellingApi.userService.removeTrustedUser(userId)
+            val response = traewellingApi.userService.removeTrustedUser(userId)
             response.isSuccessful
         } catch (_: Exception) {
             false
@@ -37,7 +39,7 @@ class TrustedUsersViewModel: ViewModel() {
 
     suspend fun getTrustingUsers(): List<TrustedUser>? {
         return try {
-            val response = TraewellingApi.userService.getTrustingUsers()
+            val response = traewellingApi.userService.getTrustingUsers()
             response.body()?.data
         } catch (_: Exception) {
             null

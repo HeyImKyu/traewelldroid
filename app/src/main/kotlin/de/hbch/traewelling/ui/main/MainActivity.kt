@@ -69,7 +69,6 @@ import com.jcloquell.androidsecurestorage.SecureStorage
 import de.c1710.filemojicompat_ui.views.picker.EmojiPackItemAdapter
 import de.hbch.traewelling.BuildConfig
 import de.hbch.traewelling.R
-import de.hbch.traewelling.api.TraewellingApi
 import de.hbch.traewelling.events.UnauthorizedEvent
 import de.hbch.traewelling.navigation.BOTTOM_NAVIGATION
 import de.hbch.traewelling.navigation.ComposeMenuItem
@@ -141,7 +140,6 @@ class MainActivity : ComponentActivity()
         initUnleash()
         secureStorage = SecureStorage(this)
         emojiPackItemAdapter = EmojiPackItemAdapter.get(this)
-        TraewellingApi.jwt = secureStorage.getObject(SharedValues.SS_JWT, String::class.java)!!
         SharedValues.TRAVELYNX_TOKEN = secureStorage.getObject(SharedValues.SS_TRAVELYNX_TOKEN, String::class.java) ?: ""
 
         settingsViewModel.loadSettings(this)

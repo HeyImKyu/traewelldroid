@@ -1,6 +1,7 @@
 package de.hbch.traewelling.ui.login
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import de.hbch.traewelling.api.WebhookRelayApi
 import de.hbch.traewelling.api.models.webhook.WebhookUserCreateRequest
 import de.hbch.traewelling.logging.Logger
@@ -8,11 +9,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun createWebhookUser(
         webhookUserCreateRequest: WebhookUserCreateRequest,
         successfulCallback: (String) -> Unit,
-        failureCallback: () -> Unit
+        failureUrlCallback: () -> Unit
     ) {
         WebhookRelayApi.service
             .createWebhookUser(webhookUserCreateRequest)
@@ -25,7 +26,7 @@ class LoginViewModel : ViewModel() {
                             return
                         }
                     }
-                    failureCallback()
+                    failureUrlCallback()
                 }
 
                 override fun onFailure(call: Call<String>, t: Throwable) {

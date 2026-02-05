@@ -34,7 +34,7 @@
     <string name="departures_at">Departures at %1$s</string>
     <string name="error_credentials">Please check your credentials</string>
     <string name="error_logout">Logout was not successful!</string>
-    <string name="error_missing_location_permission">For using this feature you need to enable the location permission in your device settings.</string>
+    <string name="error_missing_location_permission">For using this feature, you need to enable the location permission in your device settings.</string>
     <string name="username_or_email">Username or email address</string>
     <string name="check_in_successful">You are checked in!</string>
     <string name="check_in_failure">There was an error when checking you in.</string>
@@ -173,14 +173,14 @@
     <string name="status_not_shared_on_mastodon">Your check-in wasn\'t shared to Mastodon due to error %1$d.</string>
     <string name="user_mentioned_you">\@%1$s mentioned you in their status.</string>
     <string name="map_view">Map view</string>
-    <string name="configure_map">Here you can configure the map view.</string>
+    <string name="configure_map">You can configure the map view here</string>
     <string name="openrailwaymap" translatable="false">OpenRailwayMap</string>
     <string name="standard_layer">Standard</string>
     <string name="standard_description">Visualizes infrastructure like tracks, stations, …</string>
     <string name="signal_layer">Signals</string>
     <string name="signal_description">Visualizes signalling systems, signals, …</string>
     <string name="maxspeed_layer">Maximum speed</string>
-    <string name="maxspeed_description">Visualizes maximum speed of a track and speed signals.</string>
+    <string name="maxspeed_description">Visualizes maximum speed of line and speed signals.</string>
     <string name="daily_overview">Daily overview</string>
     <plurals name="journeys">
         <item quantity="one">1 journey</item>
@@ -250,7 +250,7 @@
     <string name="greeting_morning">Good morning zZz</string>
     <string name="greeting_day">Have a nice day!</string>
     <string name="greeting_evening">Good evening :)</string>
-    <string name="greeting_night">You are awake long :O</string>
+    <string name="greeting_night">Still awake, huh? :O</string>
     <string name="stops">Stops</string>
     <string name="users">Users</string>
     <string name="search_stop_users">Find stops or users</string>

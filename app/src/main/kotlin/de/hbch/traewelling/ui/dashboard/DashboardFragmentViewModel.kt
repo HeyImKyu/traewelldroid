@@ -1,9 +1,10 @@
 package de.hbch.traewelling.ui.dashboard
 
+import android.app.Application
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.status.Status
 import de.hbch.traewelling.api.models.status.StatusPage
 import de.hbch.traewelling.logging.Logger
@@ -11,7 +12,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class DashboardFragmentViewModel : ViewModel() {
+class DashboardFragmentViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     val checkIns = mutableStateListOf<Status>()
     var isRefreshing = MutableLiveData(false)
@@ -24,7 +26,7 @@ class DashboardFragmentViewModel : ViewModel() {
         page: Int
     ) {
         isRefreshing.postValue(true)
-        TraewellingApi
+        traewellingApi
             .checkInService
             .getPersonalDashboard(page)
             .enqueue(object: Callback<StatusPage> {

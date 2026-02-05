@@ -52,10 +52,11 @@ fun ActiveStatusBar(
             }
         }
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = modifier
         ) {
             Row(
-                modifier = modifier.height(58.dp).padding(horizontal = 8.dp),
+                modifier = Modifier.height(58.dp).padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -67,8 +68,8 @@ fun ActiveStatusBar(
                     LineIcon(
                         lineName = status.journey.line,
                         journeyNumber = null,
-                        lineId = status.journey.lineId,
-                        operatorCode = status.journey.operator?.id
+                        lineColorString = status.journey.lineColor,
+                        textColorString = status.journey.textColor
                     )
                     Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_right),

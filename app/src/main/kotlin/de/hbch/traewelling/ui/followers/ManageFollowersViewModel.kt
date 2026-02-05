@@ -1,14 +1,17 @@
 package de.hbch.traewelling.ui.followers
 
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.user.User
 
-class ManageFollowersViewModel: ViewModel() {
+class ManageFollowersViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     suspend fun getFollowers(page: Int = 0): List<User> {
         val users = try {
-            val response = TraewellingApi.userService.getFollowers(page)
+            val response = traewellingApi.userService.getFollowers(page)
             response.body()?.data ?: listOf()
         } catch (_: Exception) {
             listOf()
@@ -19,7 +22,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun removeFollower(userId: Int): Boolean {
         return try {
-            val response = TraewellingApi.userService.removeFollower(userId)
+            val response = traewellingApi.userService.removeFollower(userId)
             response.isSuccessful
         } catch (ex: Exception) {
             Log.e("Error", ex.message ?: "")
@@ -29,7 +32,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun getFollowings(page: Int = 0): List<User> {
         val users = try {
-            val response = TraewellingApi.userService.getFollowings(page)
+            val response = traewellingApi.userService.getFollowings(page)
             response.body()?.data ?: listOf()
         } catch (_: Exception) {
             listOf()
@@ -40,7 +43,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun unfollowUser(userId: Int): Boolean {
         return try {
-            val response = TraewellingApi.userService.removeFollowing(userId)
+            val response = traewellingApi.userService.removeFollowing(userId)
             response.isSuccessful
         } catch (ex: Exception) {
             Log.e("Error", ex.message ?: "")
@@ -50,7 +53,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun getFollowRequests(page: Int = 0): List<User> {
         return try {
-            val response = TraewellingApi.userService.getFollowRequests(page)
+            val response = traewellingApi.userService.getFollowRequests(page)
             response.body()?.data ?: listOf()
         } catch (_: Exception) {
             listOf()
@@ -59,7 +62,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun acceptFollowRequest(userId: Int): Boolean {
         return try {
-            val response = TraewellingApi.userService.acceptFollowRequest(userId)
+            val response = traewellingApi.userService.acceptFollowRequest(userId)
             response.isSuccessful
         } catch (ex: Exception) {
             Log.e("Error", ex.message ?: "")
@@ -69,7 +72,7 @@ class ManageFollowersViewModel: ViewModel() {
 
     suspend fun declineFollowRequest(userId: Int): Boolean {
         return try {
-            val response = TraewellingApi.userService.declineFollowRequest(userId)
+            val response = traewellingApi.userService.declineFollowRequest(userId)
             response.isSuccessful
         } catch (ex: Exception) {
             Log.e("Error", ex.message ?: "")

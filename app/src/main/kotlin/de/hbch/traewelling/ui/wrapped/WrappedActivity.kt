@@ -38,13 +38,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import de.hbch.traewelling.api.TraewellingApi
-import de.hbch.traewelling.api.models.wrapped.YearInReviewData
-import de.hbch.traewelling.theme.MainTheme
-import kotlinx.coroutines.launch
 import de.hbch.traewelling.R
+import de.hbch.traewelling.TraewelldroidApplication
+import de.hbch.traewelling.api.models.wrapped.YearInReviewData
 import de.hbch.traewelling.theme.AppTypography
+import de.hbch.traewelling.theme.MainTheme
 import de.hbch.traewelling.util.shareImage
+import kotlinx.coroutines.launch
 
 class WrappedActivity : ComponentActivity() {
 
@@ -52,6 +52,8 @@ class WrappedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
         setContent {
             MainTheme {
                 val coroutineScope = rememberCoroutineScope()
@@ -66,7 +68,7 @@ class WrappedActivity : ComponentActivity() {
                 LaunchedEffect(initialized) {
                     if (!initialized) {
                         coroutineScope.launch {
-                            val response = TraewellingApi.wrappedService.getYearInReview()
+                            val response = traewellingApi.wrappedService.getYearInReview()
                             if (response.isSuccessful) {
                                 yearInReview = response.body()
                             }

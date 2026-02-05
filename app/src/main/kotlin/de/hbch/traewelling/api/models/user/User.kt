@@ -32,7 +32,12 @@ data class LightUser(
     @SerializedName("displayName", alternate = ["name"]) val name: String,
     @SerializedName("username") val username: String,
     @SerializedName("profilePicture") val avatarUrl: String,
-    @SerializedName("mastodonUrl") val mastodonUrl: String?
+    @SerializedName("mastodon") val mastodonData: MastodonData?
+)
+
+data class MastodonData(
+    @SerializedName("server") val instance: String,
+    @SerializedName("user_id") val userId: Any
 )
 
 data class TrustedUser(

@@ -1,7 +1,8 @@
 package de.hbch.traewelling.ui.selectDestination
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.trip.HafasTrainTrip
 import de.hbch.traewelling.logging.Logger
@@ -9,7 +10,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SelectDestinationViewModel : ViewModel() {
+class SelectDestinationViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     fun getTrip(
         tripId: String,
@@ -18,7 +20,7 @@ class SelectDestinationViewModel : ViewModel() {
         successfulCallback: (HafasTrainTrip) -> Unit,
         failureCallback: (String?) -> Unit
     ) {
-        TraewellingApi.travelService.getTrip(tripId, lineName, start)
+        traewellingApi.travelService.getTrip(tripId, lineName, start)
             .enqueue(object: Callback<Data<HafasTrainTrip>> {
                 override fun onResponse(
                     call: Call<Data<HafasTrainTrip>>,

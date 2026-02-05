@@ -1,15 +1,18 @@
 package de.hbch.traewelling.ui.include.status
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.logging.Logger
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class CheckInCardViewModel : ViewModel() {
+class CheckInCardViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     fun createFavorite(statusId: Int, successCallback: () -> Unit) {
-        TraewellingApi.checkInService.createFavorite(statusId)
+        traewellingApi.checkInService.createFavorite(statusId)
             .enqueue(object: Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     if (response.isSuccessful) {
@@ -24,7 +27,7 @@ class CheckInCardViewModel : ViewModel() {
     }
 
     fun deleteFavorite(statusId: Int, successCallback: () -> Unit) {
-        TraewellingApi.checkInService.deleteFavorite(statusId)
+        traewellingApi.checkInService.deleteFavorite(statusId)
             .enqueue(object: Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     if (response.isSuccessful) {
@@ -43,7 +46,7 @@ class CheckInCardViewModel : ViewModel() {
         successCallback: () -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi.checkInService.deleteStatus(statusId)
+        traewellingApi.checkInService.deleteStatus(statusId)
             .enqueue(object: Callback<Any> {
                 override fun onResponse(call: Call<Any>, response: Response<Any>) {
                     if (response.isSuccessful) {

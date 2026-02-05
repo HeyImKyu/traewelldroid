@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SharePicDialog(
     status: Status,
+    loggedInUserMastodonUrl: String? = null,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -96,6 +97,7 @@ fun SharePicDialog(
             ) {
                 SharePic(
                     status = status,
+                    loggedInUserMastodonUrl = loggedInUserMastodonUrl,
                     shareTags = shareTags,
                     modifier = Modifier.padding(4.dp)
                 )
@@ -127,10 +129,13 @@ fun SharePicDialog(
 fun SharePic(
     status: Status,
     modifier: Modifier = Modifier,
+    loggedInUserMastodonUrl: String? = null,
     shareTags: Boolean = true
 ) {
     val primaryColor = LocalColorScheme.current.primary
-    val message = status.getStatusBody()
+    val message = status.getStatusBody(
+        loggedInUserMastodonUrl = loggedInUserMastodonUrl
+    )
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -240,8 +245,8 @@ fun SharePic(
                     LineIconView(
                         lineName = status.journey.line,
                         modifier = alignmentModifier.padding(start = 4.dp),
-                        operatorCode = status.journey.operator?.id,
-                        lineId = status.journey.lineId,
+                        lineColorString = status.journey.lineColor,
+                        textColorString = status.journey.textColor
                     )
                     Text(
                         modifier = alignmentModifier.padding(start = 12.dp),

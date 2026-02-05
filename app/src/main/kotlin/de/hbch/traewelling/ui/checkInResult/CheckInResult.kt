@@ -8,6 +8,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -137,6 +138,7 @@ private fun SuccessfulCheckInResult(
 ) {
     val context = LocalContext.current
     val checkInResponse = checkInViewModel.trwlCheckInResponse
+    val loggedInUser by loggedInUserViewModel.loggedInUser.observeAsState()
 
     val reviewRequest = remember { ReviewRequest() }
     var reviewRequested by remember { mutableStateOf(false) }
@@ -148,6 +150,7 @@ private fun SuccessfulCheckInResult(
         ) {
             SharePicDialog(
                 status = checkInResponse!!.data!!.status,
+                loggedInUserMastodonUrl = loggedInUser?.mastodonUrl
             )
         }
     }
@@ -181,8 +184,8 @@ private fun SuccessfulCheckInResult(
                 kilometers = journey.distance,
                 duration = journey.duration,
                 statusBusiness = checkInResponse.data.status.business,
-                operatorCode = journey.operator?.id,
-                lineId = journey.lineId
+                lineColor = journey.lineColor,
+                textColor = journey.textColor
             )
             Text(
                 text = stringResource(id = R.string.display_points, checkInResponse.data.points.points),

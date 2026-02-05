@@ -206,7 +206,7 @@ fun StatusDetail(
                                 .appendPath(journeyNumber)
                                 .appendPath(isoDate)
                                 .appendQueryParameter(
-                                    "station",
+                                    "evaNumberAlongRoute",
                                     dStatus.journey.origin.evaIdentifier.toString()
                                 )
                                 .build()

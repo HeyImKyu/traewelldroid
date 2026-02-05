@@ -51,7 +51,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.jcloquell.androidsecurestorage.SecureStorage
 import de.c1710.filemojicompat_ui.views.picker.EmojiPackItemAdapter
 import de.hbch.traewelling.R
-import de.hbch.traewelling.shared.LineIcons
 import de.hbch.traewelling.shared.LoggedInUserViewModel
 import de.hbch.traewelling.shared.SettingsViewModel
 import de.hbch.traewelling.shared.SharedValues
@@ -63,14 +62,7 @@ import de.hbch.traewelling.ui.composables.OpenRailwayMapLayer
 import de.hbch.traewelling.ui.composables.SwitchWithIconAndText
 import de.hbch.traewelling.util.getJwtExpiration
 import de.hbch.traewelling.util.refreshJwt
-import de.hbch.traewelling.util.getLocalDateTimeString
-import de.hbch.traewelling.util.readOrDownloadLineIcons
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.io.File
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
 @Composable
 fun Settings(
@@ -95,7 +87,6 @@ fun Settings(
             snackbarHostState = snackbarHostState
         )
         MapViewSettings()
-        LineIconsSettings()
         EmojiSettings(
             emojiPackItemAdapter = emojiPackItemAdapter
         )
@@ -549,58 +540,6 @@ private fun EmojiSettings(
                     }
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun LineIconsSettings(
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val file by remember { mutableStateOf(File(context.filesDir, "line-colors.csv")) }
-    var lastChanged by remember {
-        mutableStateOf(
-            Instant.ofEpochMilli(file.lastModified()).atZone(ZoneId.systemDefault())
-        )
-    }
-    var isLoading by remember { mutableStateOf(false) }
-
-    SettingsCard(
-        title = R.string.line_icons,
-        description = R.string.update_line_icons,
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = stringResource(
-                    id = R.string.last_updated,
-                    getLocalDateTimeString(lastChanged)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            ButtonWithIconAndText(
-                stringId = R.string.refresh,
-                drawableId = R.drawable.ic_download,
-                isLoading = isLoading,
-                onClick = {
-                    isLoading = true
-                    coroutineScope.launch {
-                        val icons = async {
-                            context.readOrDownloadLineIcons(true)
-                        }
-                        LineIcons.getInstance().icons.clear()
-                        LineIcons.getInstance().icons.addAll(icons.await())
-                        isLoading = false
-                        lastChanged = ZonedDateTime.now(ZoneId.systemDefault())
-                    }
-                }
-            )
         }
     }
 }

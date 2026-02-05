@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -98,6 +97,8 @@ fun TraewelldroidNavHost(
     val navToEditCheckIn: (Status) -> Unit = {
         checkInViewModel.lineName = it.journey.line
         checkInViewModel.lineId = it.journey.lineId
+        checkInViewModel.lineColor = it.journey.lineColor
+        checkInViewModel.textColor = it.journey.textColor
         checkInViewModel.operatorCode = it.journey.operator?.id
         checkInViewModel.message.postValue(it.body)
         checkInViewModel.statusVisibility.postValue(it.visibility)
@@ -123,6 +124,8 @@ fun TraewelldroidNavHost(
         checkInViewModel.lineName = status.journey.line
         checkInViewModel.operatorCode = status.journey.operator?.id
         checkInViewModel.lineId = status.journey.lineId
+        checkInViewModel.lineColor = status.journey.lineColor
+        checkInViewModel.textColor = status.journey.textColor
         checkInViewModel.tripId = status.journey.hafasTripId
         checkInViewModel.originId = status.journey.origin.id
         checkInViewModel.departureTime = status.journey.origin.departurePlanned
@@ -449,6 +452,11 @@ fun TraewelldroidNavHost(
                     navController.navigate(
                         CheckIn(editMode)
                     ) {
+                        if (editMode){
+                            popUpTo<SelectDestination> {
+                                inclusive = true
+                            }
+                        }
                         launchSingleTop = true
                     }
                 }
@@ -492,8 +500,8 @@ fun TraewelldroidNavHost(
                             navController.navigate(
                                 StatusDetails(status.id)
                             ) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    inclusive = false
+                                popUpTo<CheckIn> {
+                                    inclusive = true
                                 }
                                 launchSingleTop = true
                             }
@@ -503,19 +511,14 @@ fun TraewelldroidNavHost(
 
                         coroutineScope.launch {
                             checkInViewModel.checkIn(trwl, travelynx) { succeeded ->
-                                navController.navigate(
-                                    CheckInResult
-                                ) {
-                                    if (succeeded) {
-                                        secureStorage.storeObject(
-                                            SharedValues.SS_CHECK_IN_COUNT,
-                                            checkInCount + 1
-                                        )
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            inclusive = false
-                                        }
-                                    }
-
+                                if (succeeded) {
+                                    secureStorage.storeObject(
+                                        SharedValues.SS_CHECK_IN_COUNT,
+                                        checkInCount + 1
+                                    )
+                                    navController.popBackStackAndNavigate(Dashboard, popUpToInclusive = true)
+                                }
+                                navController.navigate(CheckInResult) {
                                     launchSingleTop = true
                                 }
                             }
@@ -554,6 +557,7 @@ fun TraewelldroidNavHost(
                 onCheckInForced = {
                     coroutineScope.launch {
                         checkInViewModel.forceCheckIn {
+                            navController.popBackStackAndNavigate(Dashboard, popUpToInclusive = true)
                             navController.navigate(
                                 CheckInResult
                             ) {

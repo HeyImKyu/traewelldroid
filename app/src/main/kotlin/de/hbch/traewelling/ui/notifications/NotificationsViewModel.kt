@@ -1,7 +1,8 @@
 package de.hbch.traewelling.ui.notifications
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.notifications.Notification
 import de.hbch.traewelling.api.models.notifications.NotificationPage
@@ -10,9 +11,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NotificationsViewModel : ViewModel() {
+class NotificationsViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     fun getUnreadNotificationCount(successfulCallback: (Int) -> Unit) {
-        TraewellingApi
+        traewellingApi
             .notificationService
             .getUnreadNotificationsCount()
             .enqueue(
@@ -34,7 +37,7 @@ class NotificationsViewModel : ViewModel() {
     }
 
     fun getNotifications(page: Int, successfulCallback: (NotificationPage) -> Unit) {
-        TraewellingApi
+        traewellingApi
             .notificationService
             .getNotifications(page)
             .enqueue(object: Callback<NotificationPage> {
@@ -56,7 +59,7 @@ class NotificationsViewModel : ViewModel() {
     }
 
     fun markAsRead(id: String, successfulCallback: (Notification) -> Unit) {
-        TraewellingApi
+        traewellingApi
             .notificationService
             .markAsRead(id)
             .enqueue(object: Callback<Data<Notification>> {
@@ -79,7 +82,7 @@ class NotificationsViewModel : ViewModel() {
     }
 
     fun markAsUnread(id: String, successfulCallback: (Notification) -> Unit) {
-        TraewellingApi
+        traewellingApi
             .notificationService
             .markAsUnread(id)
             .enqueue(object: Callback<Data<Notification>> {
@@ -102,7 +105,7 @@ class NotificationsViewModel : ViewModel() {
     }
 
     fun markAllAsRead(successfulCallback: () -> Unit) {
-        TraewellingApi
+        traewellingApi
             .notificationService
             .markAllAsRead()
             .enqueue(object: Callback<Unit> {

@@ -1,8 +1,9 @@
 package de.hbch.traewelling.ui.statistics
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.statistics.DailyStatistics
 import de.hbch.traewelling.api.models.statistics.PersonalStatistics
@@ -15,7 +16,8 @@ import retrofit2.Response
 import java.time.LocalDate
 import java.time.ZoneId
 
-class StatisticsViewModel : ViewModel() {
+class StatisticsViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     val dateRange = MutableLiveData<Pair<LocalDate, LocalDate>>()
     val statistics = MutableLiveData<PersonalStatistics?>()
@@ -38,7 +40,7 @@ class StatisticsViewModel : ViewModel() {
         val from = range.first.atStartOfDay(ZoneId.systemDefault())
         val until = range.second.atStartOfDay(ZoneId.systemDefault()).withHour(23).withMinute(59).withSecond(59)
 
-        TraewellingApi
+        traewellingApi
             .statisticsService
             .getPersonalStatistics(from, until)
             .enqueue(object: Callback<Data<PersonalStatistics>> {
@@ -65,7 +67,7 @@ class StatisticsViewModel : ViewModel() {
     }
 
     fun getDailyStatistics(date: String, onSuccess: (DailyStatistics) -> Unit, onError: () -> Unit) {
-        TraewellingApi
+        traewellingApi
             .statisticsService
             .getDailyStatistics(date)
             .enqueue(object: Callback<Data<DailyStatistics>> {

@@ -1,30 +1,33 @@
 package de.hbch.traewelling.shared
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.jcloquell.androidsecurestorage.SecureStorage
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.TraewelldroidApplication
+import de.hbch.traewelling.api.AuthManager
 import de.hbch.traewelling.api.WebhookRelayApi
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.station.Station
 import de.hbch.traewelling.api.models.status.Status
 import de.hbch.traewelling.api.models.status.StatusVisibility
 import de.hbch.traewelling.api.models.user.User
+import de.hbch.traewelling.logging.Logger
 import de.hbch.traewelling.ui.login.LoginActivity
 import de.hbch.traewelling.util.removeDynamicShortcuts
-import de.hbch.traewelling.logging.Logger
 import org.unifiedpush.android.connector.UnifiedPush
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class LoggedInUserViewModel : ViewModel() {
+class LoggedInUserViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     private val _user = MutableLiveData<User?>()
 
@@ -71,10 +74,10 @@ class LoggedInUserViewModel : ViewModel() {
     val lastVisitedStations: LiveData<List<Station>?> get() = _lastVisitedStations
 
     fun getLoggedInUser() =
-        TraewellingApi.authService.getLoggedInUser().enqueue(loadUserCallback())
+        traewellingApi.authService.getLoggedInUser().enqueue(loadUserCallback())
 
     fun logout(successCallback: () -> Unit, failureCallback: () -> Unit) {
-        TraewellingApi.authService.logout()
+        traewellingApi.authService.logout()
             .enqueue(object : Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     if (response.isSuccessful)
@@ -118,6 +121,7 @@ class LoggedInUserViewModel : ViewModel() {
         secureStorage.removeObject(SharedValues.SS_NOTIFICATIONS_ENABLED)
         secureStorage.removeObject(SharedValues.SS_REFRESH_TOKEN)
         secureStorage.removeObject(SharedValues.SS_TRWL_WEBHOOK_ID)
+        AuthManager.getInstance(context).logout()
         UnifiedPush.unregisterApp(context)
         context.removeDynamicShortcuts()
         context.startActivity(Intent(context, LoginActivity::class.java))
@@ -129,7 +133,7 @@ class LoggedInUserViewModel : ViewModel() {
         callback: () -> Unit
     ) {
         WebhookRelayApi.service.deleteWebhookUser(id)
-            .enqueue(object: Callback<Unit> {
+            .enqueue(object : Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     callback()
                 }
@@ -144,8 +148,8 @@ class LoggedInUserViewModel : ViewModel() {
         id: Int,
         callback: () -> Unit
     ) {
-        TraewellingApi.authService.deleteWebhook(id)
-            .enqueue(object: Callback<Unit> {
+        traewellingApi.authService.deleteWebhook(id)
+            .enqueue(object : Callback<Unit> {
                 override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                     callback()
                 }
@@ -157,7 +161,7 @@ class LoggedInUserViewModel : ViewModel() {
     }
 
     fun getLastVisitedStations(onDone: (List<Station>) -> Unit) {
-        TraewellingApi.authService.getLastVisitedStations()
+        traewellingApi.authService.getLastVisitedStations()
             .enqueue(object : Callback<Data<List<Station>>> {
                 override fun onResponse(
                     call: Call<Data<List<Station>>>,
@@ -180,7 +184,7 @@ class LoggedInUserViewModel : ViewModel() {
 
     suspend fun updateCurrentStatus() {
         try {
-            val response = TraewellingApi.checkInService.getOwnActiveStatus()
+            val response = traewellingApi.checkInService.getOwnActiveStatus()
             if (response.code() != 404) {
                 currentStatus.postValue(response.body()?.data)
             } else {

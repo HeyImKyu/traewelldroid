@@ -216,7 +216,10 @@ fun Search(
                                 contentDescription = null
                             )
                         },
-                        onClick = stationSelected
+                        onClick = { station ->
+                            expanded = false
+                            stationSelected(station)
+                        }
                     )
                 }
                 recentStations?.forEach {
@@ -229,7 +232,10 @@ fun Search(
                                 contentDescription = null
                             )
                         },
-                        onClick = stationSelected
+                        onClick = { station ->
+                            expanded = false
+                            stationSelected(station)
+                        }
                     )
                 }
             }
@@ -246,7 +252,10 @@ fun Search(
                         )
                     },
                     addition = additions,
-                    onClick = stationSelected
+                    onClick = { station ->
+                        expanded = false
+                        stationSelected(station)
+                    }
                 )
             }
             if (debouncedQuery.isNotBlank() && queryUsers && userResults.isNotEmpty()) {

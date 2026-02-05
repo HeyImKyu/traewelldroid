@@ -1,6 +1,7 @@
 package de.hbch.traewelling.providers.checkin.traewelling
 
 import de.hbch.traewelling.adapters.ZonedDateTimeRetrofitConverterFactory
+import de.hbch.traewelling.api.AuthManager
 import de.hbch.traewelling.api.GSON
 import de.hbch.traewelling.api.TRWL_BASE_URL
 import de.hbch.traewelling.api.interceptors.AuthInterceptor
@@ -23,7 +24,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
-class TrwlCheckInProvider: CheckInProvider<TrwlCheckInResponse>() {
+class TrwlCheckInProvider(authManager: AuthManager): CheckInProvider<TrwlCheckInResponse>() {
     private interface CheckInService {
         @POST("trains/checkin")
         suspend fun checkIn(
@@ -39,7 +40,7 @@ class TrwlCheckInProvider: CheckInProvider<TrwlCheckInResponse>() {
 
     override val client = httpClientBuilder
         .addInterceptor(ErrorInterceptor())
-        .addInterceptor(AuthInterceptor())
+        .addInterceptor(AuthInterceptor(authManager))
         .build()
     override val retrofit: Retrofit = Retrofit.Builder()
         .addConverterFactory(ZonedDateTimeRetrofitConverterFactory.create())
@@ -72,7 +73,7 @@ class TrwlCheckInProvider: CheckInProvider<TrwlCheckInResponse>() {
                         CheckInResult.ERROR
                     )
                 }
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
                 return CheckInResponse(
                     null,
                     CheckInResult.ERROR

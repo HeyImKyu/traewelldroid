@@ -25,17 +25,13 @@ class LauncherActivity : AppCompatActivity() {
             }
         })
 
-        /*val icons = runBlocking {
-            readOrDownloadLineIcons()
-        }
-        LineIcons.getInstance().icons.addAll(icons)*/
         MastodonEmojis.getInstance(this)
 
         createNotificationChannels()
 
         val secureStorage = SecureStorage(this)
-        val jwt = secureStorage.getObject(SharedValues.SS_JWT, String::class.java)
-        if (jwt == null) {
+        val authState = secureStorage.getObject(SharedValues.SS_AUTH_STATE, String::class.java)
+        if (authState == null) {
             start(LoginActivity::class.java)
         } else {
             val startMain: () -> Unit = {

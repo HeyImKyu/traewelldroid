@@ -1,20 +1,22 @@
 package de.hbch.traewelling.shared
 
+import android.app.Application
 import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.jcloquell.androidsecurestorage.SecureStorage
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.user.SaveUserSettings
 import de.hbch.traewelling.api.models.user.UserSettings
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     private val _displayTagsInCard = MutableLiveData(true)
     val displayTagsInCard: LiveData<Boolean> get() = _displayTagsInCard
@@ -47,8 +49,7 @@ class SettingsViewModel : ViewModel() {
             secureStorage.getObject(SharedValues.SS_USE_SYSTEM_FONT, Boolean::class.java) ?: false
         )
 
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        coroutineScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             getUserSettings()
         }
     }
@@ -79,7 +80,7 @@ class SettingsViewModel : ViewModel() {
 
     suspend fun getUserSettings() {
         val settings = try {
-            val response = TraewellingApi.userService.getUserSettings()
+            val response = traewellingApi.userService.getUserSettings()
             if (response.isSuccessful) {
                 response.body()?.data
             } else {
@@ -93,12 +94,12 @@ class SettingsViewModel : ViewModel() {
 
     suspend fun saveUserSettings(settings: SaveUserSettings): Response<Data<UserSettings>>? {
          return try {
-             val response = TraewellingApi.userService.saveUserSettings(settings)
+             val response = traewellingApi.userService.saveUserSettings(settings)
              if (response.isSuccessful) {
                  _userSettings.postValue(response.body()?.data)
              }
              response
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

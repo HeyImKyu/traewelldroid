@@ -269,8 +269,7 @@ fun CheckIn(
                     modifier = Modifier.fillMaxWidth(),
                     category = checkInViewModel.category,
                     lineName = checkInViewModel.lineName,
-                    lineId = checkInViewModel.lineId,
-                    operatorCode = checkInViewModel.operatorCode,
+                    lineColor = checkInViewModel.lineColor,
                     destination = checkInViewModel.destination
                 )
 

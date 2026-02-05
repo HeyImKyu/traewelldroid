@@ -3,12 +3,10 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    kotlin("android")
-    kotlin("kapt")
-    id("com.mikepenz.aboutlibraries.plugin.android")
+    id("com.mikepenz.aboutlibraries.plugin")
     id("com.google.gms.google-services")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
 }
 
 aboutLibraries {
@@ -18,8 +16,8 @@ aboutLibraries {
 
 android {
     val packageName = "de.hbch.traewelling"
-    val name = "2.21.3"
-    val code = 204
+    val name = "2.22.0"
+    val code = 209
     compileSdk = 36
 
     dependenciesInfo {
@@ -79,7 +77,7 @@ android {
         }
         debug {
             buildConfigField("String", "OAUTH_REDIRECT_URL", "\"https://app.traewelldroid.de/oauth2redirect\"")
-            buildConfigField("String", "OAUTH_CLIENT_ID", "\"43\"")
+            buildConfigField("String", "OAUTH_CLIENT_ID", "\"63\"")
             buildConfigField("String", "REPO_URL", "\"https://github.com/Traewelldroid/traewelldroid\"")
             buildConfigField("String", "PRIVACY_URL", "\"https://traewelldroid.de/privacy\"")
             buildConfigField("String", "UNLEASH_URL", "\"https://unleash.traewelldroid.de/api/frontend\"")
@@ -121,7 +119,7 @@ android {
 
 dependencies {
     // Jetpack Compose
-    val composeVersion = "1.9.3"
+    val composeVersion = "1.10.2"
     implementation("androidx.compose.runtime:runtime:$composeVersion")
     implementation("androidx.compose.ui:ui:$composeVersion")
     implementation("androidx.compose.foundation:foundation:$composeVersion")
@@ -132,18 +130,18 @@ dependencies {
     implementation("com.google.accompanist:accompanist-themeadapter-material3:0.36.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
     implementation("androidx.compose.material3:material3:1.4.0")
-    implementation("androidx.activity:activity-compose:1.11.0")
+    implementation("androidx.activity:activity-compose:1.12.3")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
 
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.google.android.material:material:1.13.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.9.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.browser:browser:1.9.0")
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation("androidx.core:core-splashscreen:1.2.0")
     implementation("com.auth0.android:jwtdecode:2.0.2")
     implementation("net.openid:appauth:0.11.1")
     implementation("org.greenrobot:eventbus:3.3.1")
@@ -161,7 +159,7 @@ dependencies {
     implementation("com.github.jcloquell:android-secure-storage:0.1.3")
 
     // Navigation Component
-    implementation("androidx.navigation:navigation-compose:2.9.5")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
 
     // Retrofit
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
@@ -174,7 +172,7 @@ dependencies {
     implementation("de.c1710:filemojicompat-autoinit:3.3.1")
 
     // OSS licenses
-    implementation("com.mikepenz:aboutlibraries-compose:13.1.0")
+    implementation("com.mikepenz:aboutlibraries-compose:13.2.1")
 
     // Feature flags
     implementation("io.getunleash:unleash-android-proxy-sdk:1.0.0")
@@ -187,14 +185,11 @@ dependencies {
         exclude("com.google.firebase", "firebase-measurement-connector")
     }
 
-    // CSV reader
-    implementation("com.jsoizo:kotlin-csv-jvm:1.10.0")
-
     // Reviews
     "playImplementation"("com.google.android.play:review:2.0.2")
     "playImplementation"("com.google.android.play:review-ktx:2.0.2")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
     val acraVersion = "5.13.1"
     "playImplementation"("ch.acra:acra-http:$acraVersion")

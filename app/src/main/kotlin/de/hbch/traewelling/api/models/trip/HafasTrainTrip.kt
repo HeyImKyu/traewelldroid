@@ -11,6 +11,7 @@ data class HafasTrainTrip(
     @SerializedName("destination") val destination: Station,
     @SerializedName("stopovers") var stopovers: List<HafasTrainTripStation>,
     @SerializedName("number") val lineId: String,
+    @SerializedName("routeColor") val lineColor: String,
     val dataSource: DataSource?
 ) {
     val safeProductType get() = category ?: ProductType.UNKNOWN

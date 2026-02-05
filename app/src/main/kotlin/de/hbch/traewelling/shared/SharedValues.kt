@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 object SharedValues {
     const val SS_JWT = "JWT"
     const val SS_REFRESH_TOKEN = "REFRESH_TOKEN"
+    const val SS_AUTH_STATE = "AUTH_STATE"
     const val SS_HASHTAG = "HASHTAG"
     const val SS_TRAVELYNX_TOKEN = "TRAVELYNX_TOKEN"
     const val SS_TRAVELYNX_AUTO_CHECKIN = "TRAVELYNX_AUTO_CHECKIN"

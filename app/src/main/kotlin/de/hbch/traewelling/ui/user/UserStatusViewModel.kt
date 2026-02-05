@@ -1,10 +1,11 @@
 package de.hbch.traewelling.ui.user
 
+import android.app.Application
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.hbch.traewelling.api.TraewellingApi
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.status.Status
 import de.hbch.traewelling.api.models.status.StatusPage
@@ -17,7 +18,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class UserStatusViewModel : ViewModel() {
+class UserStatusViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     val checkIns = mutableStateListOf<Status>()
     val user = MutableLiveData<User?>(null)
@@ -32,7 +34,7 @@ class UserStatusViewModel : ViewModel() {
             if (searchRequired) {
                 searchForUser(username)
             } else {
-                TraewellingApi.userService.getUser(username)
+                traewellingApi.userService.getUser(username)
                     .enqueue(object : Callback<Data<User>> {
                         override fun onResponse(
                             call: Call<Data<User>>,
@@ -65,7 +67,7 @@ class UserStatusViewModel : ViewModel() {
             withContext(Dispatchers.Main.immediate) {
                 try {
                     val respUsers =
-                        TraewellingApi.userService.searchUsers(username).data
+                        traewellingApi.userService.searchUsers(username).data
                     if (respUsers.isNotEmpty() && respUsers[0].username == username) {
                         user.postValue(respUsers[0])
                     }
@@ -83,7 +85,7 @@ class UserStatusViewModel : ViewModel() {
         page: Int = 1
     ) {
         isRefreshing.postValue(true)
-        TraewellingApi.checkInService.getStatusesForUser(username, page)
+        traewellingApi.checkInService.getStatusesForUser(username, page)
             .enqueue(object : Callback<StatusPage> {
                 override fun onResponse(
                     call: Call<StatusPage>,
@@ -135,7 +137,7 @@ class UserStatusViewModel : ViewModel() {
     }
 
     private fun followUser(userId: Int) {
-        TraewellingApi.userService.followUser(userId)
+        traewellingApi.userService.followUser(userId)
             .enqueue(object: Callback<Data<Unit>> {
                 override fun onResponse(call: Call<Data<Unit>>, response: Response<Data<Unit>>) {
                     if (response.isSuccessful) {
@@ -154,7 +156,7 @@ class UserStatusViewModel : ViewModel() {
     }
 
     private fun unfollowUser(userId: Int) {
-        TraewellingApi.userService.unfollowUser(userId)
+        traewellingApi.userService.unfollowUser(userId)
             .enqueue(object: Callback<Data<Unit>> {
                 override fun onResponse(call: Call<Data<Unit>>, response: Response<Data<Unit>>) {
                     if (response.isSuccessful) {
@@ -170,7 +172,7 @@ class UserStatusViewModel : ViewModel() {
     }
 
     private fun muteUser(userId: Int) {
-        TraewellingApi.userService.muteUser(userId)
+        traewellingApi.userService.muteUser(userId)
             .enqueue(object: Callback<Data<Unit>> {
                 override fun onResponse(call: Call<Data<Unit>>, response: Response<Data<Unit>>) {
                     if (response.isSuccessful) {
@@ -186,7 +188,7 @@ class UserStatusViewModel : ViewModel() {
     }
 
     private fun unmuteUser(userId: Int) {
-        TraewellingApi.userService.unmuteUser(userId)
+        traewellingApi.userService.unmuteUser(userId)
             .enqueue(object: Callback<Data<Unit>> {
                 override fun onResponse(call: Call<Data<Unit>>, response: Response<Data<Unit>>) {
                     if (response.isSuccessful) {

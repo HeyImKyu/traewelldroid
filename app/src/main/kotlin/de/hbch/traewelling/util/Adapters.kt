@@ -61,7 +61,11 @@ fun getLongLocalDateString(date: ZonedDateTime): String
 
 @Composable
 fun getDelayColor(planned: ZonedDateTime, real: ZonedDateTime?): Color {
-    val duration = Duration.between(planned, real ?: planned)
+    if (real == null) {
+        return Color.Unspecified
+    }
+
+    val duration = Duration.between(planned, real)
     val difference = duration.toMinutes()
 
     val color = when {

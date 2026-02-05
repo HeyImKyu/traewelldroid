@@ -10,6 +10,8 @@ data class HafasLine(
     @SerializedName("name") val name: String?,
     @SerializedName("product") val product: ProductType?,
     @SerializedName("operator") val operator: HafasOperator?,
+    @SerializedName("color") val lineColor: String?,
+    @SerializedName("textColor") val textColor: String?,
     val productName: String
 ) {
     val safeProductType get() = product ?: ProductType.UNKNOWN

@@ -1,12 +1,14 @@
 package de.hbch.traewelling.ui.searchConnection
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.station.Station
 import de.hbch.traewelling.api.models.trip.HafasTripPage
 import java.time.ZonedDateTime
 
-class SearchConnectionViewModel: ViewModel() {
+class SearchConnectionViewModel(application: Application): AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
 
     suspend fun searchConnections(
         stationId: Int,
@@ -14,7 +16,7 @@ class SearchConnectionViewModel: ViewModel() {
         filterType: FilterType?
     ): Triple<Int, HafasTripPage?, Exception?> {
         return try {
-            val tripPage = TraewellingApi
+            val tripPage = traewellingApi
                 .travelService
                 .getDeparturesAtStation(
                     stationId,
@@ -32,7 +34,7 @@ class SearchConnectionViewModel: ViewModel() {
         stationId: Int
     ): Station? {
         return try {
-            TraewellingApi.authService.setUserHomelandStation(stationId).data
+            traewellingApi.authService.setUserHomelandStation(stationId).data
         } catch (_: Exception) {
             null
         }

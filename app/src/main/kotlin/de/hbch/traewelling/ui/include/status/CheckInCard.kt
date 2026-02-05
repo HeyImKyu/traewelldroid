@@ -124,6 +124,8 @@ fun CheckInCard(
             statusSelected(status.id)
         }
 
+        val loggedInUser = loggedInUserViewModel?.loggedInUser?.value
+
         var progress by remember { mutableFloatStateOf(0f) }
         val progressAnimation by animateFloatAsState(
             targetValue = progress,
@@ -246,10 +248,12 @@ fun CheckInCard(
                         kilometers = status.journey.distance,
                         duration = status.journey.duration,
                         statusBusiness = status.business,
-                        message = status.getStatusBody(),
+                        message = status.getStatusBody(
+                            loggedInUserMastodonUrl = loggedInUser?.mastodonUrl
+                        ),
                         journeyNumber = status.journey.manualJourneyNumber ?: status.journey.journeyNumber,
-                        operatorCode = status.journey.operator?.id,
-                        lineId = status.journey.lineId,
+                        lineColor = status.journey.lineColor,
+                        textColor = status.journey.textColor,
                         userSelected = userSelected,
                         textClicked = statusClickedAction
                     )
@@ -265,6 +269,7 @@ fun CheckInCard(
                     joinConnection = joinConnection,
                     isOwnStatus =
                     (loggedInUserViewModel?.loggedInUser?.value?.id ?: -1) == status.user.id,
+                    loggedInUserMastodonUrl = loggedInUserViewModel?.loggedInUser?.value?.mastodonUrl,
                     displayLongDate = displayLongDate,
                     checkInCardViewModel = checkInCardViewModel,
                     userSelected = userSelected,
@@ -374,8 +379,8 @@ fun CheckInCardContent(
     duration: Int,
     statusBusiness: StatusBusiness,
     message: Pair<AnnotatedString?, Map<String, InlineTextContent>>,
-    operatorCode: String? = null,
-    lineId: String? = null,
+    lineColor: String? = null,
+    textColor: String? = null,
     userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
     textClicked: () -> Unit = { }
 ) {
@@ -390,8 +395,8 @@ fun CheckInCardContent(
             kilometers = kilometers,
             duration = duration,
             statusBusiness = statusBusiness,
-            operatorCode = operatorCode,
-            lineId = lineId
+            lineColor = lineColor,
+            textColor = textColor
         )
         if (!message.first.isNullOrEmpty()) {
             Row(
@@ -430,8 +435,8 @@ fun StatusDetailsRow(
     duration: Int,
     statusBusiness: StatusBusiness,
     modifier: Modifier = Modifier,
-    operatorCode: String? = null,
-    lineId: String? = null
+    lineColor: String? = null,
+    textColor: String? = null
 ) {
     FlowRow(
         modifier = modifier
@@ -445,8 +450,8 @@ fun StatusDetailsRow(
         LineIcon(
             lineName = line,
             modifier = alignmentModifier.padding(start = 4.dp),
-            operatorCode = operatorCode,
-            lineId = lineId,
+            lineColorString = lineColor,
+            textColorString = textColor,
             journeyNumber = journeyNumber
         )
         Text(
@@ -475,6 +480,7 @@ private fun CheckInCardFooter(
     checkInCardViewModel: CheckInCardViewModel,
     joinConnection: (Status) -> Unit,
     isOwnStatus: Boolean = false,
+    loggedInUserMastodonUrl: String? = null,
     displayLongDate: Boolean = false,
     defaultVisibility: StatusVisibility = StatusVisibility.PUBLIC,
     userSelected: (String, Boolean, Boolean) -> Unit = { _, _, _ -> },
@@ -547,7 +553,10 @@ private fun CheckInCardFooter(
                 shareVisible = false
             }
         ) {
-            SharePicDialog(status = status)
+            SharePicDialog(
+                status = status,
+                loggedInUserMastodonUrl = loggedInUserMastodonUrl
+            )
         }
     }
 

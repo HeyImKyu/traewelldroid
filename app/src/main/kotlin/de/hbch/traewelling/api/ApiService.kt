@@ -1,5 +1,6 @@
 package de.hbch.traewelling.api
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import de.hbch.traewelling.BuildConfig
@@ -37,34 +38,13 @@ import java.util.concurrent.TimeUnit
 
 const val TRWL_BASE_URL = "https://traewelling.de/api/v1/"
 
-val HTTP_CLIENT = OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS)
-    .addInterceptor(LogInterceptor())
-    .addInterceptor(ErrorInterceptor())
-    .addInterceptor(AuthInterceptor())
-    .build()
-
 fun getGson(): Gson = GsonBuilder()
-        .setExclusionStrategies(ExcludeAnnotationExclusionStrategy())
-        .registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeGsonConverter())
-        .serializeNulls()
-        .create()
+    .setExclusionStrategies(ExcludeAnnotationExclusionStrategy())
+    .registerTypeAdapter(ZonedDateTime::class.java, ZonedDateTimeGsonConverter())
+    .serializeNulls()
+    .create()
 
 val GSON: Gson = getGson()
-
-private val trwlRetrofit =
-    Retrofit.Builder()
-        .addConverterFactory(ZonedDateTimeRetrofitConverterFactory.create())
-        .addConverterFactory(GsonConverterFactory.create(GSON))
-        .baseUrl(TRWL_BASE_URL)
-        .client(HTTP_CLIENT)
-        .build()
-
-private val webhookRelayRetrofit =
-    Retrofit.Builder()
-        .baseUrl("${BuildConfig.WEBHOOK_URL}/api/")
-        .client(HTTP_CLIENT)
-        .addConverterFactory(GsonConverterFactory.create(GSON))
-        .build()
 
 interface AuthService {
     @POST("auth/logout")
@@ -97,7 +77,7 @@ interface StatisticsService {
     @GET("statistics/daily/{date}?withPolylines=true")
     fun getDailyStatistics(
         @Path("date") date: String
-    ) : Call<Data<DailyStatistics>>
+    ): Call<Data<DailyStatistics>>
 }
 
 interface CheckInService {
@@ -351,8 +331,21 @@ interface WrappedService {
     suspend fun getYearInReview(): Response<YearInReviewData>
 }
 
-object TraewellingApi {
-    var jwt: String = ""
+class TraewellingApi(context: Context) {
+    private val httpClient = OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS)
+        .addInterceptor(LogInterceptor())
+        .addInterceptor(ErrorInterceptor())
+        .addInterceptor(AuthInterceptor(AuthManager.getInstance(context)))
+        .build()
+
+    private val trwlRetrofit =
+        Retrofit.Builder()
+            .addConverterFactory(ZonedDateTimeRetrofitConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(GSON))
+            .baseUrl(TRWL_BASE_URL)
+            .client(httpClient)
+            .build()
+
 
     val userService: UserService by lazy {
         trwlRetrofit.create(UserService::class.java)
@@ -382,6 +375,17 @@ object TraewellingApi {
 
 object WebhookRelayApi {
     val service: WebhookRelayService by lazy {
+        val httpClient = OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(LogInterceptor())
+            .addInterceptor(ErrorInterceptor())
+            .build()
+
+        val webhookRelayRetrofit =
+            Retrofit.Builder()
+                .baseUrl("${BuildConfig.WEBHOOK_URL}/api/")
+                .client(httpClient)
+                .addConverterFactory(GsonConverterFactory.create(GSON))
+                .build()
         webhookRelayRetrofit.create(WebhookRelayService::class.java)
     }
 }

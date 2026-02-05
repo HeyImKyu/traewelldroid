@@ -1,13 +1,15 @@
 package de.hbch.traewelling.shared
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.event.Event
 import java.time.ZonedDateTime
 
-class EventViewModel : ViewModel() {
+class EventViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
     suspend fun getEvents(timestamp: ZonedDateTime): List<Event> {
-        return TraewellingApi
+        return traewellingApi
                 .checkInService
                 .getEvents(timestamp)
                 .data

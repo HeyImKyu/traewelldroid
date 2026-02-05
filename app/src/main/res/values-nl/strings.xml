@@ -200,4 +200,16 @@
     <string name="changes_saved">Wijzigingen zijn opgeslagen</string>
     <string name="time_left">%1$s over</string>
     <string name="edit_profile">Bewerk profiel</string>
+    <string name="greeting_evening">Goedenavond :)</string>
+    <string name="greeting_day">Fijne dag!</string>
+    <string name="use_system_font">Systeemfont gebruiken (herstart nodig)</string>
+    <string name="product_type_express">Express</string>
+    <string name="no_departures">Er zijn geen vertrekken beschikbaar voor deze tijd.</string>
+    <string name="no_event_check_in">Geen evenement check-in</string>
+    <string name="other_operators">Andere vervoersbedrijven</string>
+    <string name="daily_overview">Dagelijks overzicht</string>
+    <string name="check_ins">Check-ins</string>
+    <string name="channel_mastodon_errors">Mastodon-fouten</string>
+    <string name="channel_event_suggestions">Event suggesties</string>
+    <string name="channel_likes">Likes</string>
 </resources>

@@ -103,9 +103,9 @@ fun SearchConnection(
     val removedCount by remember { derivedStateOf { hafasTripPage?.meta?.removedCount } }
 
     val scrollState = rememberScrollState()
-    var searchDate by remember { mutableStateOf(currentSearchDate) }
+    var searchDate by rememberSaveable { mutableStateOf(currentSearchDate) }
     var loading by remember { mutableStateOf(false) }
-    var selectedFilter by remember { mutableStateOf<FilterType?>(null) }
+    var selectedFilter by rememberSaveable { mutableStateOf<FilterType?>(null) }
 
     LaunchedEffect(stationId, searchDate, selectedFilter) {
         loading = true
@@ -190,6 +190,8 @@ fun SearchConnection(
                                 checkInViewModel.lineName =
                                     trip.line?.name ?: trip.line?.journeyNumber ?: ""
                                 checkInViewModel.lineId = trip.line?.id
+                                checkInViewModel.lineColor = trip.line?.lineColor
+                                checkInViewModel.textColor = trip.line?.textColor
                                 checkInViewModel.operatorCode = trip.line?.operator?.id
                                 checkInViewModel.tripId = trip.tripId
                                 checkInViewModel.originId = trip.station?.id ?: -1
@@ -390,7 +392,7 @@ fun SearchConnection(
                     .padding(vertical = 8.dp),
                 productType = trip.line?.safeProductType ?: ProductType.UNKNOWN,
                 departurePlanned = trip.plannedDeparture ?: ZonedDateTime.now(),
-                departureReal = trip.departure ?: trip.plannedDeparture,
+                departureReal = trip.departure,
                 isCancelled = trip.isCancelled,
                 destination = getLastDestination(trip),
                 departureStation =
@@ -464,9 +466,9 @@ fun ConnectionListItem(
                 )
                 LineIcon(
                     lineName = hafasLine?.name ?: "",
-                    operatorCode = hafasLine?.operator?.id,
-                    lineId = hafasLine?.id,
-                    journeyNumber = journeyNumber
+                    journeyNumber = journeyNumber,
+                    lineColorString = hafasLine?.lineColor,
+                    textColorString = hafasLine?.textColor
                 )
             }
 

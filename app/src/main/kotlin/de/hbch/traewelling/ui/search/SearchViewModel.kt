@@ -1,18 +1,21 @@
 package de.hbch.traewelling.ui.search
 
+import android.app.Application
 import android.location.Location
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.station.Station
 import de.hbch.traewelling.api.models.user.User
 
-class SearchViewModel : ViewModel() {
+class SearchViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     suspend fun searchUsers(
         query: String,
         page: Int = 1
     ): List<User>? {
         return try {
-            TraewellingApi.userService.searchUsers(query, page).data
+            traewellingApi.userService.searchUsers(query, page).data
         } catch (_: Exception) {
             null
         }
@@ -22,7 +25,7 @@ class SearchViewModel : ViewModel() {
         query: String
     ): List<Station>? {
         return try {
-            val stations = TraewellingApi.travelService.autoCompleteStationSearch(query).data
+            val stations = traewellingApi.travelService.autoCompleteStationSearch(query).data
             stations.sortedWith(compareBy(nullsLast()) { it.ds100 })
         } catch (_: Exception) {
             null
@@ -33,7 +36,7 @@ class SearchViewModel : ViewModel() {
         location: Location
     ): Station? {
         return try {
-            TraewellingApi.travelService.getNearbyStation(location.latitude, location.longitude).data
+            traewellingApi.travelService.getNearbyStation(location.latitude, location.longitude).data
         } catch (_: Exception) {
             null
         }

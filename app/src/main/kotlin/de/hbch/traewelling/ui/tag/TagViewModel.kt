@@ -1,7 +1,8 @@
 package de.hbch.traewelling.ui.tag
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.status.Tag
 import de.hbch.traewelling.logging.Logger
@@ -9,7 +10,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class TagViewModel : ViewModel() {
+class TagViewModel(application: Application) : AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     private fun getApiCallback(
         successfulCallback: (Tag) -> Unit,
         failureCallback: () -> Unit
@@ -36,7 +39,7 @@ class TagViewModel : ViewModel() {
         successfulCallback: (List<Tag>) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .getTagsForStatusById(statusId)
             .enqueue(object: Callback<Data<List<Tag>>> {
@@ -67,7 +70,7 @@ class TagViewModel : ViewModel() {
         successfulCallback: (Tag) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .createTagForStatus(statusId, tag)
             .enqueue(getApiCallback(successfulCallback, failureCallback))
@@ -79,7 +82,7 @@ class TagViewModel : ViewModel() {
         successfulCallback: (Tag) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .updateTagForStatus(statusId, tag.safeKey.key, tag)
             .enqueue(getApiCallback(successfulCallback, failureCallback))
@@ -91,7 +94,7 @@ class TagViewModel : ViewModel() {
         successfulCallback: () -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .deleteTagForStatus(statusId, tag.safeKey.key)
             .enqueue(object: Callback<Any> {

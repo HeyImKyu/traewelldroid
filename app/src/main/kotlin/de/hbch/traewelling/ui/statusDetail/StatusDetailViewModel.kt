@@ -1,7 +1,8 @@
 package de.hbch.traewelling.ui.statusDetail
 
-import androidx.lifecycle.ViewModel
-import de.hbch.traewelling.api.TraewellingApi
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import de.hbch.traewelling.TraewelldroidApplication
 import de.hbch.traewelling.api.models.Data
 import de.hbch.traewelling.api.models.polyline.FeatureCollection
 import de.hbch.traewelling.api.models.status.Status
@@ -11,13 +12,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class StatusDetailViewModel: ViewModel() {
+class StatusDetailViewModel(application: Application): AndroidViewModel(application) {
+    private val traewellingApi = (application as TraewelldroidApplication).traewellingApi
+
     fun getStatusById(
         statusId: Int,
         successfulCallback: (Status) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .getStatusById(statusId)
             .enqueue(object: Callback<Data<Status>> {
@@ -46,7 +49,7 @@ class StatusDetailViewModel: ViewModel() {
         successfulCallback: (FeatureCollection) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .getPolylinesForStatuses(listOf(statusId).joinToString(","))
             .enqueue(
@@ -64,6 +67,7 @@ class StatusDetailViewModel: ViewModel() {
                         }
                         failureCallback()
                     }
+
                     override fun onFailure(call: Call<Data<FeatureCollection>>, t: Throwable) {
                         failureCallback()
                         Logger.captureException(t)
@@ -77,7 +81,7 @@ class StatusDetailViewModel: ViewModel() {
         successfulCallback: (List<User>) -> Unit,
         failureCallback: () -> Unit
     ) {
-        TraewellingApi
+        traewellingApi
             .checkInService
             .getLikesForStatusById(statusId)
             .enqueue(

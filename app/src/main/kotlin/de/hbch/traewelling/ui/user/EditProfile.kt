@@ -33,7 +33,6 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.hbch.traewelling.R
 import de.hbch.traewelling.api.models.status.AllowedPersonsToCheckIn
@@ -54,9 +53,7 @@ fun EditProfile(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val settingsViewModel: SettingsViewModel = viewModel(
-        viewModelStoreOwner = context as ViewModelStoreOwner
-    )
+    val settingsViewModel: SettingsViewModel = viewModel()
     val userSettings by settingsViewModel.userSettings.observeAsState()
 
     var username by rememberSaveable { mutableStateOf("") }
@@ -76,6 +73,10 @@ fun EditProfile(
     var allowedPersonsToCheckInSelectionVisible by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var formErrorString by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        settingsViewModel.loadSettings(context)
+    }
 
     LaunchedEffect(userSettings) {
         val settings = userSettings
